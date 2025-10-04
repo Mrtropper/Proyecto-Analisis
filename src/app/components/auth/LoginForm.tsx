@@ -63,7 +63,7 @@ export default function LoginForm() {
       <Input
         label="Correo"
         type="email"
-        placeholder="tu@email.com"
+        placeholder="example@example.com"
         value={email}
         onChange={onEmail}
         autoComplete="email"

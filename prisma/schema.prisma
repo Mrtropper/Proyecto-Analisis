@@ -8,10 +8,17 @@ datasource db {
 }
 
 model User {
-  id       Int      @id @default(autoincrement()) @map("UserId")
-  email    String?  @unique                       @map("Email")
-  password String?  @db.VarChar(255)              @map("Password")
-  status   String?  @db.VarChar(50)               @map("Status")
+  id       Int     @id @default(autoincrement()) @map("UserId")
+  username String? @map("Username") @db.VarChar(50)
+  email    String? @map("Email") @db.VarChar(255)
+  password String? @map("Password") @db.VarChar(255)
+  status   String? @default("A") @map("Status") @db.VarChar(5)
 
-  @@map("User") // nombre real de la tabla
+  @@map("User")
+}
+
+model Bitacora {
+  Id     Int     @id @default(autoincrement())
+  UserId Int?
+  Tipo   String? @db.VarChar(255)
 }
