@@ -14,11 +14,75 @@ model User {
   password String? @map("Password") @db.VarChar(255)
   status   String? @default("A") @map("Status") @db.VarChar(5)
 
+<<<<<<< HEAD
   @@map("User")
 }
 
+=======
+  roles    RolUsuario[]
+
+  @@map("User")
+}
+
+model Rol {
+  id        Int      @id @default(autoincrement()) @map("RolId")
+  nombre    String   @map("RolNombre") @db.VarChar(50)
+  descripcion String? @map("descripcion") @db.VarChar(255)
+  usuarios  RolUsuario[]
+
+  permisosModulos PermisosModulos[]
+
+  @@map("Rol")
+}
+
+model RolUsuario {
+  id_usuario Int  @map("id_usuario")
+  id_rol     Int  @map("id_rol")
+
+  user User @relation(fields: [id_usuario], references: [id])
+  rol  Rol  @relation(fields: [id_rol], references: [id])
+
+  @@id([id_usuario, id_rol])
+  @@map("RolUsuario")
+}
+
+>>>>>>> 0573f89 (Se agrega las funciones de los roles: crear, editar, buscar por id, traer lista completa de roles y eliminar)
 model Bitacora {
   Id     Int     @id @default(autoincrement())
   UserId Int?
   Tipo   String? @db.VarChar(255)
 }
+<<<<<<< HEAD
+=======
+
+model Modulos {
+  id        Int     @id @default(autoincrement()) @map("id")
+  nombre    String  @db.VarChar(255)
+  descripcion String? @db.VarChar(255)
+  permisosModulos PermisosModulos[]
+
+  @@map("Modulos")
+}
+
+model Permisos {
+  id        Int     @id @default(autoincrement()) @map("id")
+  nombre    String  @db.VarChar(255)
+  descripcion String? @db.VarChar(255)
+  permisosModulos PermisosModulos[]
+
+  @@map("Permisos")
+}
+
+model PermisosModulos {
+  rolId     Int     @map("rolId")
+  moduloId  Int     @map("moduloId")
+  permisoId Int     @map("permisoId")
+
+  rol    Rol      @relation(fields: [rolId], references: [id])
+  modulo Modulos  @relation(fields: [moduloId], references: [id])
+  permiso Permisos @relation(fields: [permisoId], references: [id])
+
+  @@id([rolId, moduloId, permisoId])
+  @@map("PermisosModulos")
+}
+>>>>>>> 0573f89 (Se agrega las funciones de los roles: crear, editar, buscar por id, traer lista completa de roles y eliminar)
