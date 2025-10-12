@@ -42,13 +42,28 @@ export default function LoginForm() {
         }),
       });
 
-      const data = (await res.json()) as { ok?: boolean; error?: string };
+  const data = (await res.json()) as { ok?: boolean; error?: string; id?: number; username?: string; email?: string };
 
       if (!res.ok || !data.ok) {
         throw new Error(data?.error || "Credenciales inválidas");
       }
 
-      // éxito → redirige a donde quieras
+      // éxito → obtener roles y guardar info mínima en sessionStorage
+      try {
+        let roles: string[] = [];
+        if (data.id) {
+          try {
+            const r = await fetch(`/api/roles/user/assign/${data.id}`);
+            const rd = await r.json();
+            if (Array.isArray(rd)) roles = rd.map((x: any) => x.nombre).filter(Boolean);
+          } catch (e) {
+            // ignore
+          }
+        }
+        const user = { id: data.id, username: data.username, email: data.email, roles };
+        try { sessionStorage.setItem("user", JSON.stringify(user)); } catch {}
+      } catch {}
+
       router.push("/dashboard");
       router.refresh();
     } catch (err: any) {
