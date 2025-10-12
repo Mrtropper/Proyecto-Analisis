@@ -15,10 +15,7 @@
     "next": "15.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0"
-<<<<<<< HEAD
     
-=======
->>>>>>> 0573f89 (Se agrega las funciones de los roles: crear, editar, buscar por id, traer lista completa de roles y eliminar)
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -28,17 +25,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
-<<<<<<< HEAD
     "prisma": "^6.16.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
   
-=======
-    "prima": "^0.0.1",
-    "prisma": "^6.17.1",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
->>>>>>> 0573f89 (Se agrega las funciones de los roles: crear, editar, buscar por id, traer lista completa de roles y eliminar)
 }
