@@ -105,6 +105,9 @@ export async function POST(req: Request) {
         username: true,
         password: true,
         status: true,
+        roles: {
+          select:{rol:{select:{nombre:true}}}
+        }
       },
     });
 
@@ -126,7 +129,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Usuario inactivo" }, { status: 403 });
     }
 
-    return NextResponse.json({ ok: true, id: user.id, username: user.username, email: user.email });
+    const roles = (user.roles?? [])
+    .map(r => r.rol?.nombre ?? "")
+    .filter(Boolean);
+
+    return NextResponse.json({
+    ok: true,
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    roles, // ["Admin","usuario",...]
+    });
+
+    //return NextResponse.json({ ok: true, id: user.id, username: user.username, email: user.email });
   } catch (e) {
     console.error("LOGIN_ERROR:", e);
     return NextResponse.json({ error: "Error del servidor" }, { status: 500 });

@@ -26,6 +26,32 @@ export default function LoginForm() {
     setRemember(e.target.checked);
   }
 
+  /** Normaliza cualquier forma de roles a un string[] */
+  function extractRoleNames(anyRoles: any): string[] {
+    if (!anyRoles) return [];
+    if (Array.isArray(anyRoles)) {
+      // Soporta: ["Admin"] | [{nombre:"Admin"}] | [{rol:{nombre:"Admin"}}]
+      return anyRoles
+        .map((r) =>
+          typeof r === "string" ? r : r?.nombre ?? r?.rol?.nombre ?? ""
+        )
+        .filter(Boolean);
+    }
+    const maybe = anyRoles.roles ?? anyRoles.user?.roles ?? [];
+    return extractRoleNames(maybe);
+  }
+
+  /** Decide la ruta del dashboard según prioridad: ADMIN → PROVIDER/PROVEEDOR → USER/USUARIO → no-rol */
+  function pickDestination(roles: string[]): string {
+    const set = new Set(roles.map((r) => r.toUpperCase()));
+    if (set.has("ADMIN")) return "/dashboard/roles/";
+    if (set.has("PROVIDER") || set.has("PROVEEDOR"))
+      return "/dashboard/roles/provider";
+    if (set.has("USER") || set.has("USUARIO") || set.has("USERS"))
+      return "/dashboard/roles/users";
+    return "/dashboard/roles/no-rol";
+  }
+
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -38,33 +64,46 @@ export default function LoginForm() {
         body: JSON.stringify({
           email,
           password: pwd,
-          remember, // por si luego quieres controlar expiración de cookie
+          remember, // por si luego controlas expiración de cookie
         }),
       });
 
-  const data = (await res.json()) as { ok?: boolean; error?: string; id?: number; username?: string; email?: string };
+      const data = await res.json();
 
-      if (!res.ok || !data.ok) {
+      if (!res.ok) {
         throw new Error(data?.error || "Credenciales inválidas");
       }
 
-      // éxito → obtener roles y guardar info mínima en sessionStorage
-      try {
-        let roles: string[] = [];
-        if (data.id) {
-          try {
-            const r = await fetch(`/api/roles/user/assign/${data.id}`);
-            const rd = await r.json();
-            if (Array.isArray(rd)) roles = rd.map((x: any) => x.nombre).filter(Boolean);
-          } catch (e) {
-            // ignore
-          }
-        }
-        const user = { id: data.id, username: data.username, email: data.email, roles };
-        try { sessionStorage.setItem("user", JSON.stringify(user)); } catch {}
-      } catch {}
+      // 1) Intentar roles devueltos por /api/login
+      let roles = extractRoleNames(data?.roles);
 
-      router.push("/dashboard");
+      // 2) Fallback: si no vinieron, consulta tu endpoint de asignaciones
+      if (!roles.length && data?.id) {
+        try {
+          const r = await fetch(`/api/roles/user/assign/${data.id}`);
+          const rd = await r.json();
+          roles = extractRoleNames(rd);
+        } catch {
+          // ignore
+        }
+      }
+
+      // Guarda info mínima para uso posterior (opcional)
+      try {
+        const user = {
+          id: data.id,
+          username: data.username,
+          email: data.email,
+          roles,
+        };
+        sessionStorage.setItem("user", JSON.stringify(user));
+      } catch {
+        // ignore
+      }
+
+      // 3) Redirigir al dashboard correspondiente
+      const dest = pickDestination(roles);
+      router.push(dest);
       router.refresh();
     } catch (err: any) {
       setError(err?.message ?? "Error al iniciar sesión");
