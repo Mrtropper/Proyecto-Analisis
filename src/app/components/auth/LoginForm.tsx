@@ -44,7 +44,7 @@ export default function LoginForm() {
   /** Decide la ruta del dashboard según prioridad: ADMIN → PROVIDER/PROVEEDOR → USER/USUARIO → no-rol */
   function pickDestination(roles: string[]): string {
     const set = new Set(roles.map((r) => r.toUpperCase()));
-    if (set.has("ADMIN")) return "/dashboard/roles/";
+    if (set.has("ADMIN")) return "/dashboard/roles/admin";
     if (set.has("PROVIDER") || set.has("PROVEEDOR"))
       return "/dashboard/roles/provider";
     if (set.has("USER") || set.has("USUARIO") || set.has("USERS"))
@@ -145,9 +145,6 @@ export default function LoginForm() {
           Recordarme
         </label>
 
-        <a href="/forgot" className="text-sm text-sky-400 hover:underline">
-          ¿Olvidaste tu contraseña?
-        </a>
       </div>
 
       {error && (

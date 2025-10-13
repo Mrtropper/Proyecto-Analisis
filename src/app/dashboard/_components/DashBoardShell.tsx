@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import { ReactNode } from "react";
 
@@ -23,9 +24,16 @@ export default function DashboardShell({
   children: ReactNode;
 }) {
   const roleLabel =
-    role === "ADMIN" ? "Administrador" :
-    role === "PROVIDER" ? "Proveedor" :
-    role === "USER" ? "Usuario" : "Sin rol";
+    role === "ADMIN"
+      ? "Administrador"
+      : role === "PROVIDER"
+      ? "Proveedor"
+      : role === "USER"
+      ? "Usuario"
+      : "Sin rol";
+
+  const isAdmin = role === "ADMIN";
+  const disabledClass = "pointer-events-none opacity-50 cursor-not-allowed";
 
   return (
     <main className="min-h-dvh bg-neutral-950 text-neutral-100">
@@ -37,11 +45,35 @@ export default function DashboardShell({
               Rol: {roleLabel}
             </span>
           </div>
+
           <nav className="flex items-center gap-4 text-sm text-neutral-300">
-            <Link href="/dashboard/roles/admin" className="hover:text-white">Admin</Link>
-            <Link href="/dashboard/roles/provider" className="hover:text-white">Provider</Link>
-            <Link href="/dashboard/roles/users" className="hover:text-white">Users</Link>
-            <Link href="/dashboard/roles/no-rol" className="hover:text-white">Sin rol</Link>
+            <Link
+              href="/auth/register"
+              className={`hover:text-white ${!isAdmin ? disabledClass : ""}`}
+            >
+              Crear Usuario
+            </Link>
+
+            <Link
+              href="/dashboard/roles"
+              className={`hover:text-white ${!isAdmin ? disabledClass : ""}`}
+            >
+              Modificar Roles
+            </Link>
+
+            <Link
+              href="/"
+              className={`hover:text-white ${!isAdmin ? disabledClass : ""}`}
+            >
+              Cosa (salir)
+            </Link>
+
+            <Link
+              href="/auth/login"
+              className={`hover:text-white `}
+            >
+              Log Out
+            </Link>
           </nav>
         </div>
       </header>

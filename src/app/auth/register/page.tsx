@@ -130,12 +130,6 @@ export default function RegisterPage({
         </button>
       </form>
 
-      <p className="mt-4 text-sm text-neutral-400">
-        ¿Ya tienes cuenta?{" "}
-        <a className="text-sky-400 hover:underline" href="/auth/login">
-          Inicia sesión
-        </a>
-      </p>
     </div>
   );
 }

@@ -18,12 +18,6 @@ export default function LoginPage() {
 
         <LoginForm />
 
-        <p className="mt-6 text-center text-sm text-neutral-400">
-          ¿No tienes cuenta?{" "}
-          <Link className="text-sky-400 hover:underline" href="/auth/register">
-            Regístrate
-          </Link>
-        </p>
       </div>
     </main>
   );
