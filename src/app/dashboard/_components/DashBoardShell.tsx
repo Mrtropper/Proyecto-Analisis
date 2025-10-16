@@ -33,7 +33,6 @@ export default function DashboardShell({
       : "Sin rol";
 
   const isAdmin = role === "ADMIN";
-  const disabledClass = "pointer-events-none opacity-50 cursor-not-allowed";
 
   return (
     <main className="min-h-dvh bg-neutral-950 text-neutral-100">
@@ -47,31 +46,23 @@ export default function DashboardShell({
           </div>
 
           <nav className="flex items-center gap-4 text-sm text-neutral-300">
-            <Link
-              href="/auth/register"
-              className={`hover:text-white ${!isAdmin ? disabledClass : ""}`}
-            >
-              Crear Usuario
-            </Link>
+            {isAdmin && (
+              <>
+                <Link href="/auth/register" className="hover:text-white">
+                  Crear Usuario
+                </Link>
 
-            <Link
-              href="/dashboard/roles"
-              className={`hover:text-white ${!isAdmin ? disabledClass : ""}`}
-            >
-              Modificar Roles
-            </Link>
+                <Link href="/dashboard/roles" className="hover:text-white">
+                  Modificar Roles
+                </Link>
 
-            <Link
-              href="/"
-              className={`hover:text-white ${!isAdmin ? disabledClass : ""}`}
-            >
-              Cosa (salir)
-            </Link>
+                <Link href="/" className="hover:text-white">
+                  Cosa (salir)
+                </Link>
+              </>
+            )}
 
-            <Link
-              href="/auth/login"
-              className={`hover:text-white `}
-            >
+            <Link href="/auth/login" className="hover:text-white">
               Log Out
             </Link>
           </nav>
