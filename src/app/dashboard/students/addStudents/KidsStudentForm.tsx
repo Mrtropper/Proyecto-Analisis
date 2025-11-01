@@ -12,28 +12,25 @@ export default function KidsStudentForm() {
     }
   })();
 
+  const [nombre, setNombre] = useState("");
+  const [cedula, setCedula] = useState( "");
+  const [genero, setGenero] = useState("");
+  const [nacionalidad, setNacionalidad] = useState("");
+  const [fechaNacimiento, setFechaNacimiento] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [nivelEscolar, setNivelEscolar] = useState("");
+  const [institucionEducativa, setInstitucionEducativa] = useState("");
+  const [polizaEstudiantil, setPolizaEstudiantil] = useState(""); 
+  const [necesidadesEspeciales, setNecesidadesEspeciales] = useState("");
 
-  const [email, setEmail] = useState(parsed?.email ?? ""); //Correo (si lo tiene)
-  const [nombre, setNombre] = useState(parsed?.nombre ?? "");
-  const [cedula, setCedula] = useState(parsed?.cedula ?? "");
-  const [genero, setGenero] = useState(parsed?.genero ?? "");
-  const [nacionalidad, setNacionalidad] = useState(parsed?.nacionalidad ?? "");
-  const [fechaNacimiento, setFechaNacimiento] = useState(parsed?.fechaNacimiento ?? "");
-  const [telefonoEstudiante, setTelefonoEstudiante] = useState(parsed?.telefonoEstudiante ?? ""); // Teléfono (si lo tiene)
-  const [direccion, setDireccion] = useState(parsed?.direccion ?? "");
-  const [nivelEscolar, setNivelEscolar] = useState(parsed?.nivelEscolar ?? "");
-  const [institucionEducativa, setInstitucionEducativa] = useState(parsed?.institucionEducativa ?? "");
-  const [polizaEstudiantil, setPolizaEstudiantil] = useState(parsed?.polizaEstudiantil ?? ""); // Poliza (si la tiene)
-  const [necesidadesEspeciales, setNecesidadesEspeciales] = useState(parsed?.necesidadesEspeciales ?? "");
+  const [encargadoNombre, setEncargadoNombre] = useState("");
+  const [encargadoCedula, setEncargadoCedula] = useState("");
+  const [encargadoTelefono, setEncargadoTelefono] = useState("");
+  const [encargadoEmail, setEncargadoEmail] = useState("");
+  const [encargadoOcupacion, setEncargadoOcupacion] = useState("");
+  const [lugarTrabajo, setLugarTrabajo] = useState("");
 
-  const [encargadoNombre, setEncargadoNombre] = useState(parsed?.encargadoNombre ?? "");
-  const [encargadoCedula, setEncargadoCedula] = useState(parsed?.encargadoCedula ?? "");
-  const [encargadoTelefono, setEncargadoTelefono] = useState(parsed?.encargadoTelefono ?? "");
-  const [encargadoEmail, setEncargadoEmail] = useState(parsed?.encargadoEmail ?? "");
-  const [encargadoOcupacion, setEncargadoOcupacion] = useState(parsed?.encargadoOcupacion ?? "");
-  const [lugarTrabajo, setLugarTrabajo] = useState(parsed?.lugarTrabajo ?? "");
-
-  const [personasAutorizadas, setPersonasAutorizadas] = useState<any[]>(parsed?.personasAutorizadas ?? [{ nombre: "", relacion: "", cedula: "" }, { nombre: "", relacion: "", cedula: "" }]);
+  const [personasAutorizadas, setPersonasAutorizadas] = useState<any[]>([{ nombre: "", relacion: "", cedula: "" }, { nombre: "", relacion: "", cedula: "" }]);
 
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -48,7 +45,7 @@ export default function KidsStudentForm() {
     if (!direccion.trim()) return setMsg("La Dirección es requerida");
     if (!nivelEscolar.trim()) return setMsg("El Nivel Escolar es requerido");
     if (!institucionEducativa.trim()) return setMsg("La Institución Educativa es requerida");
-    // VALIDACIÓN DEL ENCARGADO
+    // Validacion encargado legal
     if (!encargadoNombre.trim()) return setMsg("El nombre del encargado legal es requerido");
     if (!encargadoCedula.trim()) return setMsg("La cédula del encargado legal es requerida");
     if (!encargadoTelefono.trim()) return setMsg("El teléfono del encargado legal es requerido");
@@ -67,14 +64,13 @@ export default function KidsStudentForm() {
         genero: genero.trim(),
         nacionalidad: nacionalidad.trim(),
         fechaNacimiento: fechaNacimiento.trim(),
-        telefonoEstudiante: telefonoEstudiante.trim(),
         direccion: direccion.trim(),
         nivelEscolar: nivelEscolar.trim(),
         institucionEducativa: institucionEducativa.trim(),
         polizaEstudiantil: polizaEstudiantil.trim(),
         necesidadesEspeciales: necesidadesEspeciales.trim(),
 
-        //encargado legal
+        //Encargado legal
         encargadoNombre: encargadoNombre.trim(),
         encargadoCedula: encargadoCedula.trim(),
         encargadoTelefono: encargadoTelefono.trim(),
@@ -84,7 +80,7 @@ export default function KidsStudentForm() {
 
         personasAutorizadas: validAuthorized,
       };
-      // Nota: almacenamiento local provisional. No es seguro para contraseñas reales.
+      // Nota: almacenamiento local provisional
       sessionStorage.setItem("user", JSON.stringify(newUser));
       setMsg("Perfil guardado (solo local, provisional)");
     } catch (e) {
@@ -191,7 +187,7 @@ export default function KidsStudentForm() {
                 value={encargadoOcupacion} onChange={(e) => setEncargadoOcupacion(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Lugar de Trabajo (Número y Dirección Exacta) */}
-              <label className="block text-base font-semibold text-white">Lugar de Trabajo (Número y Dirección Exacta)</label>
+              <label className="block text-base font-semibold text-white">Lugar de Trabajo (Número de Teléfono y Dirección Exacta)</label>
               <textarea
                 value={lugarTrabajo} onChange={(e) => setLugarTrabajo(e.target.value)} rows={2} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
             </div>
@@ -242,6 +238,7 @@ export default function KidsStudentForm() {
           </div>
         </div>
 
+        {/* Botones Guardar / Cancelar */}
         <div className="mt-4 flex gap-2">
           <button type="submit" className="rounded bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 px-3 py-2 text-sm font-medium">Guardar</button>
           <button type="button" onClick={cancel} className="rounded bg-rose-600 hover:bg-rose-700 active:bg-rose-800 px-3 py-2 text-sm font-medium">Cancelar</button>

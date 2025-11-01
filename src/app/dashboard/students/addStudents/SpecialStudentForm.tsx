@@ -13,27 +13,27 @@ export default function SpecialStudentForm() {
   })();
 
 
-  const [email, setEmail] = useState(parsed?.email ?? ""); //Correo (si lo tiene)
-  const [nombre, setNombre] = useState(parsed?.nombre ?? "");
-  const [cedula, setCedula] = useState(parsed?.cedula ?? "");
-  const [genero, setGenero] = useState(parsed?.genero ?? "");
-  const [nacionalidad, setNacionalidad] = useState(parsed?.nacionalidad ?? "");
-  const [fechaNacimiento, setFechaNacimiento] = useState(parsed?.fechaNacimiento ?? "");
-  const [telefonoEstudiante, setTelefonoEstudiante] = useState(parsed?.telefonoEstudiante ?? ""); // Teléfono (si lo tiene)
-  const [direccion, setDireccion] = useState(parsed?.direccion ?? "");
-  const [nivelEscolar, setNivelEscolar] = useState(parsed?.nivelEscolar ?? "");
-  const [institucionEducativa, setInstitucionEducativa] = useState(parsed?.institucionEducativa ?? "");
-  const [polizaEstudiantil, setPolizaEstudiantil] = useState(parsed?.polizaEstudiantil ?? ""); // Poliza (si la tiene)
-  const [necesidadesEspeciales, setNecesidadesEspeciales] = useState(parsed?.necesidadesEspeciales ?? "");
+  const [email, setEmail] = useState(""); 
+  const [nombre, setNombre] = useState("");
+  const [cedula, setCedula] = useState("");
+  const [genero, setGenero] = useState("");
+  const [nacionalidad, setNacionalidad] = useState("");
+  const [fechaNacimiento, setFechaNacimiento] = useState("");
+  const [telefonoEstudiante, setTelefonoEstudiante] = useState(""); 
+  const [direccion, setDireccion] = useState("");
+  const [nivelEscolar, setNivelEscolar] = useState("");
+  const [institucionEducativa, setInstitucionEducativa] = useState("");
+  const [polizaEstudiantil, setPolizaEstudiantil] = useState(""); 
+  const [necesidadesEspeciales, setNecesidadesEspeciales] = useState("");
 
-  const [encargadoNombre, setEncargadoNombre] = useState(parsed?.encargadoNombre ?? "");
-  const [encargadoCedula, setEncargadoCedula] = useState(parsed?.encargadoCedula ?? "");
-  const [encargadoTelefono, setEncargadoTelefono] = useState(parsed?.encargadoTelefono ?? "");
-  const [encargadoEmail, setEncargadoEmail] = useState(parsed?.encargadoEmail ?? "");
-  const [encargadoOcupacion, setEncargadoOcupacion] = useState(parsed?.encargadoOcupacion ?? "");
-  const [lugarTrabajo, setLugarTrabajo] = useState(parsed?.lugarTrabajo ?? "");
+  const [encargadoNombre, setEncargadoNombre] = useState("");
+  const [encargadoCedula, setEncargadoCedula] = useState("");
+  const [encargadoTelefono, setEncargadoTelefono] = useState("");
+  const [encargadoEmail, setEncargadoEmail] = useState("");
+  const [encargadoOcupacion, setEncargadoOcupacion] = useState("");
+  const [lugarTrabajo, setLugarTrabajo] = useState("");
 
-  const [personasAutorizadas, setPersonasAutorizadas] = useState<any[]>(parsed?.personasAutorizadas ?? [{ nombre: "", relacion: "", cedula: "" }, { nombre: "", relacion: "", cedula: "" }]);
+  const [personasAutorizadas, setPersonasAutorizadas] = useState<any[]>([{ nombre: "", relacion: "", cedula: "" }, { nombre: "", relacion: "", cedula: "" }]);
 
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -48,7 +48,7 @@ export default function SpecialStudentForm() {
     if (!direccion.trim()) return setMsg("La Dirección es requerida");
     if (!nivelEscolar.trim()) return setMsg("El Nivel Escolar es requerido");
     if (!institucionEducativa.trim()) return setMsg("La Institución Educativa es requerida");
-    // VALIDACIÓN DEL ENCARGADO
+    // Validacion encargado legal
     if (!encargadoNombre.trim()) return setMsg("El nombre del encargado legal es requerido");
     if (!encargadoCedula.trim()) return setMsg("La cédula del encargado legal es requerida");
     if (!encargadoTelefono.trim()) return setMsg("El teléfono del encargado legal es requerido");
@@ -74,7 +74,7 @@ export default function SpecialStudentForm() {
         polizaEstudiantil: polizaEstudiantil.trim(),
         necesidadesEspeciales: necesidadesEspeciales.trim(),
 
-        //encargado legal
+        //Encargado legal
         encargadoNombre: encargadoNombre.trim(),
         encargadoCedula: encargadoCedula.trim(),
         encargadoTelefono: encargadoTelefono.trim(),
@@ -84,7 +84,7 @@ export default function SpecialStudentForm() {
 
         personasAutorizadas: validAuthorized,
       };
-      // Nota: almacenamiento local provisional. No es seguro para contraseñas reales.
+      // Nota: almacenamiento local provisional
       sessionStorage.setItem("user", JSON.stringify(newUser));
       setMsg("Perfil guardado (solo local, provisional)");
     } catch (e) {
@@ -98,7 +98,7 @@ export default function SpecialStudentForm() {
       window.history.back();
     }
   }
-  
+
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
       <form onSubmit={save} className="rounded border border-neutral-800 bg-neutral-900/60 p-6">
@@ -142,13 +142,13 @@ export default function SpecialStudentForm() {
               <label className="block text-base font-semibold text-white">Número de Teléfono (si lo tiene)</label>
               <input type="tel" placeholder="Opcional" value={telefonoEstudiante} onChange={(e) => setTelefonoEstudiante(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
-              {/* Nombre Completo */}
+              {/* Correo */}
               <label className="block text-base font-semibold text-white">Correo (si lo tiene)</label>
-              <input value={nombre} onChange={(e) => setNombre(e.target.value)}  placeholder ="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Dirección del Domicilio (Usando textarea para más espacio) */}
               <label className="block text-base font-semibold text-white">Dirección del Domicilio (Provincia, Cantón, etc.)</label>
-              <textarea value={direccion} onChange={(e) => setDireccion(e.target.value)} rows={3} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              <textarea value={direccion} onChange={(e) => setDireccion(e.target.value)} rows={3} placeholder="Si aplica" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Nivel Escolar MEP */}
               <label className="block text-base font-semibold text-white">Edad (entre 8 a 17)</label>
@@ -163,13 +163,13 @@ export default function SpecialStudentForm() {
               <input value={polizaEstudiantil} onChange={(e) => setPolizaEstudiantil(e.target.value)} placeholder="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Cuidados especiales de salud */}
-              <label className="block text-base font-semibold text-white">Cuidados de Salud</label>
+              <label className="block text-base font-semibold text-white">Cuidados de Salud o Necesidades de Aprendizaje</label>
               <textarea value={necesidadesEspeciales} onChange={(e) => setNecesidadesEspeciales(e.target.value)} rows={3} placeholder="Especifique si aplica" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
             </div>
           </div>
 
           <div className="flex-1 min-w-0 border-t md:border-t-0 md:border-l border-neutral-700 md:pl-6 pt-2 md:pt-0">
-            
+
             {/* Encargado Legal */}
             <h3 className="mb-4 text-xl font-bold text-sky-400">Datos del Encargado Legal</h3>
             <div className="space-y-2">
@@ -199,7 +199,7 @@ export default function SpecialStudentForm() {
                 value={encargadoOcupacion} onChange={(e) => setEncargadoOcupacion(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Lugar de Trabajo (Número y Dirección Exacta) */}
-              <label className="block text-base font-semibold text-white">Lugar de Trabajo (Número y Dirección Exacta)</label>
+              <label className="block text-base font-semibold text-white">Lugar de Trabajo (Número de Teléfono y Dirección Exacta)</label>
               <textarea
                 value={lugarTrabajo} onChange={(e) => setLugarTrabajo(e.target.value)} rows={2} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
             </div>
@@ -250,6 +250,7 @@ export default function SpecialStudentForm() {
           </div>
         </div>
 
+        {/* Botones Guardar / Cancelar */}
         <div className="mt-4 flex gap-2">
           <button type="submit" className="rounded bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 px-3 py-2 text-sm font-medium">Guardar</button>
           <button type="button" onClick={cancel} className="rounded bg-rose-600 hover:bg-rose-700 active:bg-rose-800 px-3 py-2 text-sm font-medium">Cancelar</button>

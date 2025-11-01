@@ -13,16 +13,18 @@ export default function ServiceStudentForm() {
   })();
 
 
-  const [email, setEmail] = useState(parsed?.email ?? ""); 
-  const [nombre, setNombre] = useState(parsed?.nombre ?? "");
-  const [cedula, setCedula] = useState(parsed?.cedula ?? "");
-  const [genero, setGenero] = useState(parsed?.genero ?? "");
-  const [nacionalidad, setNacionalidad] = useState(parsed?.nacionalidad ?? "");
-  const [fechaNacimiento, setFechaNacimiento] = useState(parsed?.fechaNacimiento ?? "");
-  const [telefonoEstudiante, setTelefonoEstudiante] = useState(parsed?.telefonoEstudiante ?? ""); 
-  const [direccion, setDireccion] = useState(parsed?.direccion ?? "");
-  const [poliza, setPoliza] = useState(parsed?.poliza ?? ""); // Poliza (si la tiene)
-  const [necesidadesEspeciales, setNecesidadesEspeciales] = useState(parsed?.necesidadesEspeciales ?? "");
+  const [email, setEmail] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [cedula, setCedula] = useState("");
+  const [genero, setGenero] = useState("");
+  const [nacionalidad, setNacionalidad] = useState("");
+  const [fechaNacimiento, setFechaNacimiento] = useState("");
+  const [telefonoEstudiante, setTelefonoEstudiante] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [poliza, setPoliza] = useState(""); 
+  const [ocupacion, setOcupacion] = useState("");
+  const [lugarTrabajo, setLugarTrabajo] = useState("");
+  const [necesidadesEspeciales, setNecesidadesEspeciales] = useState("");
 
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -50,8 +52,10 @@ export default function ServiceStudentForm() {
         direccion: direccion.trim(),
         poliza: poliza.trim(),
         necesidadesEspeciales: necesidadesEspeciales.trim(),
+        ocupacion: ocupacion.trim(),
+        lugarTrabajo: lugarTrabajo.trim()
       };
-      // Nota: almacenamiento local provisional. No es seguro para contraseñas reales.
+      // Nota: almacenamiento local provisional
       sessionStorage.setItem("user", JSON.stringify(newUser));
       setMsg("Perfil guardado (solo local, provisional)");
     } catch (e) {
@@ -65,7 +69,7 @@ export default function ServiceStudentForm() {
       window.history.back();
     }
   }
-  
+
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
       <form onSubmit={save} className="rounded border border-neutral-800 bg-neutral-900/60 p-6">
@@ -106,12 +110,12 @@ export default function ServiceStudentForm() {
               <input type="date" value={fechaNacimiento} onChange={(e) => setFechaNacimiento(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Teléfono del Estudiante (Si lo tiene) */}
-              <label className="block text-base font-semibold text-white">Número de Teléfono (si lo tiene)</label>
+              <label className="block text-base font-semibold text-white">Número de Teléfono </label>
               <input type="tel" placeholder="Opcional" value={telefonoEstudiante} onChange={(e) => setTelefonoEstudiante(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
-              {/* Nombre Completo */}
+              {/* Correo */}
               <label className="block text-base font-semibold text-white">Correo </label>
-              <input value={nombre} onChange={(e) => setNombre(e.target.value)}  placeholder ="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              <input value={email} onChange={(e) => setEmail(e.target.value)}  placeholder ="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Dirección del Domicilio (Usando textarea para más espacio) */}
               <label className="block text-base font-semibold text-white">Dirección del Domicilio (Provincia, Cantón, etc.)</label>
@@ -121,21 +125,31 @@ export default function ServiceStudentForm() {
               <label className="block text-base font-semibold text-white">Póliza (si la tiene)</label>
               <input value={poliza} onChange={(e) => setPoliza(e.target.value)} placeholder="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
+              {/* Ocupación */}
+              <label className="block text-base font-semibold text-white">Ocupación</label>
+              <input
+                value={ocupacion} onChange={(e) => setOcupacion(e.target.value)} placeholder="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+
+              {/* Lugar de Trabajo (Número y Dirección Exacta) */}
+              <label className="block text-base font-semibold text-white">Lugar de Trabajo (Número de Teléfono y Dirección Exacta)</label>
+              <textarea
+                value={lugarTrabajo} onChange={(e) => setLugarTrabajo(e.target.value)} rows={2} placeholder="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+
               {/* Cuidados especiales de salud */}
               <label className="block text-base font-semibold text-white">Cuidados de Salud</label>
               <textarea value={necesidadesEspeciales} onChange={(e) => setNecesidadesEspeciales(e.target.value)} rows={3} placeholder="Especifique si aplica" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
             </div>
           </div>
-            
         </div>
 
+        {/* Botones Guardar / Cancelar */}
         <div className="mt-4 flex gap-2">
           <button type="submit" className="rounded bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 px-3 py-2 text-sm font-medium">Guardar</button>
           <button type="button" onClick={cancel} className="rounded bg-rose-600 hover:bg-rose-700 active:bg-rose-800 px-3 py-2 text-sm font-medium">Cancelar</button>
         </div>
 
-        {msg && <p className="mt-3 text-sm text-neutral-200">{msg}</p>}
-      </form>
-    </div>
+        { msg && <p className="mt-3 text-sm text-neutral-200">{msg}</p> }
+      </form >
+    </div >
   );
 }
