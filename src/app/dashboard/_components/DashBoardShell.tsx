@@ -33,6 +33,7 @@ export default function DashboardShell({
       : "Sin rol";
 
   const isAdmin = role === "ADMIN";
+  const isUser = role === "USER";
 
   return (
     <main className="min-h-dvh bg-neutral-950 text-neutral-100">
@@ -54,6 +55,14 @@ export default function DashboardShell({
 
                 <Link href="/dashboard/roles" className="hover:text-white">
                   Modificar Roles
+                </Link>
+
+                <Link href="/dashboard/students" className="hover:text-white">
+                  Gestión Estudiantes
+                </Link>
+
+                <Link href="/dashboard/instruments" className="hover:text-white">
+                  Gestion Instrumentos
                 </Link>
 
                 <Link href="/" className="hover:text-white">
