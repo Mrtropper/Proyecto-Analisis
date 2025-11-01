@@ -48,8 +48,8 @@ export default function StudentsPage() {
             className={`
               px-5 py-2 rounded-xl font-semibold transition-all duration-200
               ${studentType === option.id
-                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/40"
-                : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700 hover:text-white"
+                ? "bg-sky-600 text-white shadow-lg shadow-sky-600/40"
+                : "bg-neutral-800 text-neutral-300 hover:bg-sky-700 hover:text-white"
               }
             `}
           >

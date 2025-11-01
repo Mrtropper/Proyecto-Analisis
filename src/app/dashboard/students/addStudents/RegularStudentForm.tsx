@@ -3,15 +3,6 @@
 import { useState } from "react";
 
 export default function RegularStudentForm() {
-  const raw = typeof window !== "undefined" ? sessionStorage.getItem("user") : null;
-  const parsed = (() => {
-    try {
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
-  })();
-
 
   const [email, setEmail] = useState(""); 
   const [nombre, setNombre] = useState("");
@@ -61,7 +52,6 @@ export default function RegularStudentForm() {
 
     try {
       const newUser: any = {
-        ...(parsed ?? {}),
         nombre: nombre.trim(),
         cedula: cedula.trim(),
         genero: genero.trim(),
@@ -117,10 +107,6 @@ export default function RegularStudentForm() {
               <label className="block text-base font-semibold text-white">Número de Cédula</label>
               <input value={cedula} onChange={(e) => setCedula(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
-              {/* Instrumento*/}
-              <label className="block text-base font-semibold text-white">Instrumento</label>
-              <input value={nombre} onChange={(e) => setNombre(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
-
               {/* Género (Usando select para mejor control) */}
               <label className="block text-base font-semibold text-white">Género</label>
               <select value={genero} onChange={(e) => setGenero(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white">
@@ -150,10 +136,14 @@ export default function RegularStudentForm() {
               <label className="block text-base font-semibold text-white">Dirección del Domicilio (Provincia, Cantón, etc.)</label>
               <textarea value={direccion} onChange={(e) => setDireccion(e.target.value)} rows={3} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
-              {/* Nivel Escolar MEP */}
+              {/* Edad */}
               <label className="block text-base font-semibold text-white">Edad (entre 8 a 17)</label>
               <input value={nivelEscolar} onChange={(e) => setNivelEscolar(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
+              {/* Nivel Escolar */}
+              <label className="block text-base font-semibold text-white">Nivel escolar (MEP)</label>
+              <input value={nivelEscolar} onChange={(e) => setNivelEscolar(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              
               {/* Nombre de la Institución Educativa del MEP */}
               <label className="block text-base font-semibold text-white">Nombre de la Institución Educativa (MEP)</label>
               <input value={institucionEducativa} onChange={(e) => setInstitucionEducativa(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
