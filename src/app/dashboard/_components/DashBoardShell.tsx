@@ -70,7 +70,7 @@ export default function DashboardShell({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                   </button>
-                  
+
                   {isGestionOpen && (
                     <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-neutral-800 ring-1 ring-black ring-opacity-5 z-20">
                       <div
@@ -80,16 +80,16 @@ export default function DashboardShell({
                         aria-labelledby="options-menu"
                       >
                         <Link
-                          href="/dashboard/students"
+                          href="/dashboard/students/searchStudents"
                           className="block px-4 py-2 text-sm text-neutral-100 hover:bg-neutral-700"
                           role="menuitem"
-                          onClick={() => setIsGestionOpen(false)} 
+                          onClick={() => setIsGestionOpen(false)}
                         >
                           Buscar Estudiante
                         </Link>
-                        
+
                         <Link
-                          href="/dashboard/students/addStudents" 
+                          href="/dashboard/students/addStudents"
                           className="block px-4 py-2 text-sm text-neutral-100 hover:bg-neutral-700"
                           role="menuitem"
                           onClick={() => setIsGestionOpen(false)}
