@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const initialStudents = [
     { id: 1, nombre: "Sofía Gómez", cedula: "1-1234-5678" },
@@ -14,6 +15,7 @@ const initialStudents = [
 export default function SearchForm() {
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredStudents, setFilteredStudents] = useState(initialStudents);
+    const router = useRouter();
 
     // Función para manejar la búsqueda/filtrado
     const handleSearch = () => {
@@ -35,9 +37,8 @@ export default function SearchForm() {
         setFilteredStudents(results);
     };
 
-    // Funciones de manejo de boton VER (por ahora solo muestran una alerta)
     const handleView = (studentId: number) => {
-        alert(`Ver detalles del estudiante con ID: ${studentId}`);
+        router.push(`/students/${studentId}`);
     };
 
     // Funciones de manejo de boton ESTADO (por ahora solo muestran una alerta)
