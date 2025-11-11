@@ -77,3 +77,40 @@ model PermisosModulos {
   @@id([rolId, moduloId, permisoId])
   @@map("PermisosModulos")
 }
+
+model Instrumento {
+  idInstrumento Int    @id @map("idInstrumento")
+  nombre        String @db.VarChar(100)
+  familia       String @db.VarChar(100)
+
+  inventarios Inventario[]
+  prestamos   PrestamoInstrumento[]
+
+  @@map("Instrumento")
+}
+
+model Inventario {
+  idInventario  String         @id @db.VarChar(100)
+  idInstrumento Int
+  estado        String?        @db.VarChar(20)
+
+  instrumento Instrumento @relation(fields: [idInstrumento], references: [idInstrumento])
+  prestamos   PrestamoInstrumento[]
+
+  @@map("inventario")
+}
+
+model PrestamoInstrumento {
+  idPrestamo     Int       @id @default(autoincrement()) @map("idPrestamo")
+  idEstudiante   Int       @map("idEstudiante")
+  idInstrumento  Int       @map("idInstrumento")
+  idInventario   String    @db.VarChar(60)
+  fechaEntrega   DateTime? @map("fechaEntrega")
+  Estatus        String?   @db.VarChar(15)
+
+  instrumento Instrumento @relation(fields: [idInstrumento], references: [idInstrumento])
+  inventario   Inventario @relation(fields: [idInventario], references: [idInventario])
+  
+
+  @@map("PrestamoInstrumento")
+}
