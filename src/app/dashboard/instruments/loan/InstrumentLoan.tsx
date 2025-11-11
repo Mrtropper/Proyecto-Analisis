@@ -1,9 +1,9 @@
 
-
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+
 
 export default function InstrumentForm() {
   const [idPrestamo, setIdPrestamo] = useState("");
@@ -19,7 +19,7 @@ export default function InstrumentForm() {
   const [searchEstudiante, setSearchEstudiante] = useState("");
   const [searchInstrumento, setSearchInstrumento] = useState("");
 
-  // Lista simulada de estudiantes
+  // Lista simulada de estudiantes (puedes reemplazar luego por tu API)
   const listaEstudiantes = [
     { id: "EST001", nombre: "Juan Pérez" },
     { id: "EST002", nombre: "María López" },
@@ -36,26 +36,34 @@ export default function InstrumentForm() {
   useEffect(() => {
     const fetchInstrumentos = async () => {
       try {
-        const response = await fetch("/api/prestamoInstrumento");
-        if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+        // 👇 Usa la ruta correcta según tu endpoint
+        const response = await fetch("http://localhost:3000/api/instrumento");
+        
+        if (!response.ok) {
+          throw new Error(`Error HTTP ${response.status}`);
+        }
 
         const data = await response.json();
-        console.log("Datos recibidos desde la API:", data);
+        console.log("🎸 Datos recibidos desde la API:", data);
 
+        // 🔹 Mapea solo los campos necesarios
         const formato = data.map(
           (inst: { idInstrumento: string; nombre: string }) => ({
             idInstrumento: inst.idInstrumento,
             nombre: inst.nombre,
           })
         );
+
         setInstrumentosDisponibles(formato);
       } catch (error) {
-        console.error("Error al cargar instrumentos:", error);
+        console.error("❌ Error al cargar instrumentos:", error);
       }
     };
 
     fetchInstrumentos();
   }, []);
+
+
 
   // 🔹 Filtros de búsqueda
   const filteredEstudiantes = listaEstudiantes.filter(
@@ -65,64 +73,23 @@ export default function InstrumentForm() {
   );
 
   const filteredInstrumentos = instrumentosDisponibles.filter(
-    (inst) =>
-      inst.idInstrumento
-        ?.toString()
-        .toLowerCase()
-        .includes(searchInstrumento.toLowerCase()) ||
-      inst.nombre?.toLowerCase().includes(searchInstrumento.toLowerCase())
-  );
+  (inst) =>
+    inst.idInstrumento?.toString().toLowerCase().includes(searchInstrumento.toLowerCase()) ||
+    inst.nombre?.toLowerCase().includes(searchInstrumento.toLowerCase())
+);
 
-  // 🔹 Guardar préstamo en la API
-  const handleGuardar = async () => {
-    if (
-      !idPrestamo ||
-      !idEstudiante ||
-      !idInstrumento ||
-      !idInventario ||
-      !fechaEntrega ||
-      !estatus
-    ) {
-      alert("⚠️ Por favor completa todos los campos antes de guardar.");
-      return;
-    }
 
-    const nuevoPrestamo = {
+  // Guardar préstamo (simulado)
+  const handleGuardar = () => {
+    console.log({
       idPrestamo,
       idEstudiante,
       idInstrumento,
       idInventario,
       fechaEntrega,
       estatus,
-    };
-
-    try {
-      const response = await fetch("http://localhost:3000/api/prestamo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevoPrestamo),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error del servidor: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log("✅ Préstamo guardado correctamente:", data);
-      alert("✅ Préstamo guardado con éxito.");
-
-      // Limpia el formulario
-      setIdPrestamo("");
-      setIdEstudiante("");
-      setIdInstrumento("");
-      setIdInventario("");
-      setFechaEntrega("");
-      setEstatus("");
-    } catch (error) {
-      console.error("❌ Error al guardar el préstamo:", error);
-      alert("❌ No se pudo guardar el préstamo. Revisa la consola para más detalles.");
-    }
+    });
+    alert("Datos guardados correctamente");
   };
 
   return (
@@ -141,11 +108,12 @@ export default function InstrumentForm() {
           </button>
         </Link>
 
-        <Link href="/dashboard/instruments/list">
+         <Link href="/dashboard/instruments/list">
           <button className="w-50 bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
             Lista
           </button>
         </Link>
+
       </div>
 
       {/* Cuadro principal */}
@@ -170,7 +138,7 @@ export default function InstrumentForm() {
           />
         </div>
 
-        {/* Campo Estudiante */}
+        {/* Campo Estudiante con modal */}
         <div className="mt-4">
           <label className="block text-sm text-neutral-200 mb-1">
             ID del estudiante
@@ -192,7 +160,7 @@ export default function InstrumentForm() {
           </div>
         </div>
 
-        {/* Campo Instrumento */}
+        {/* Campo Instrumento con modal */}
         <div className="mt-4">
           <label className="block text-sm text-neutral-200 mb-1">
             ID del instrumento
@@ -236,7 +204,7 @@ export default function InstrumentForm() {
             type="date"
             value={fechaEntrega}
             onChange={(e) => setFechaEntrega(e.target.value)}
-            min={new Date().toISOString().split("T")[0]} // 🔒 Evita fechas pasadas
+            min={new Date().toISOString().split("T")[0]} // Evita fechas pasadas
             className="w-full px-3 py-2 bg-gray-900 text-white rounded focus:outline-none focus:ring focus:ring-blue-400"
           />
         </div>
