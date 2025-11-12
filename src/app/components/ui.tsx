@@ -24,12 +24,12 @@ export function Input({
   return (
     <label className="block">
       {label && (
-        <span className="mb-1 block text-sm text-neutral-300">{label}</span>
+        <span className="mb-1 block text-sm text-black">{label}</span>
       )}
       <input
         {...props}
         className={cn(
-          "h-11 w-full rounded-xl border border-neutral-700 bg-neutral-900 px-3 text-white outline-none transition focus:border-neutral-500",
+          "h-11 w-full rounded-xl border border-neutral-700 bg-white px-3 text-black outline-none transition focus:border-neutral-500",
           "placeholder:text-neutral-500",
           className
         )}
@@ -51,14 +51,14 @@ export function PasswordInput({
   return (
     <label className="block">
       {label && (
-        <span className="mb-1 block text-sm text-neutral-300">{label}</span>
+        <span className="mb-1 block text-sm text-black">{label}</span>
       )}
       <div className="relative">
         <input
           {...props}
           type={show ? "text" : "password"}
           className={cn(
-            "h-11 w-full rounded-xl border border-neutral-700 bg-neutral-900 px-3 pr-24 text-white outline-none transition focus:border-neutral-500",
+            "h-11 w-full rounded-xl border border-neutral-700 bg-white px-3 pr-24 text-black outline-none transition focus:border-neutral-500",
             "placeholder:text-neutral-500",
             className
           )}
@@ -85,8 +85,8 @@ export function Button({
     <button
       {...props}
       className={cn(
-        "inline-flex h-11 w-full items-center justify-center rounded-xl border border-white/10 bg-white px-4 font-semibold text-black",
-        "transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex h-11 w-full items-center justify-center rounded-xl border border-white/10 bg-black px-4 font-semibold text-white",
+        "transition hover:opacity-90 disabled:opacity-60 ",
         className
       )}
     />

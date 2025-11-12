@@ -113,7 +113,7 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4 text-black">
       <Input
         label="Correo"
         type="email"
@@ -134,7 +134,7 @@ export default function LoginForm() {
         minLength={6}
       />
 
-      <div className="flex items-center justify-between pt-1">
+      {/* <div className="flex items-center justify-between pt-1">
         <label className="inline-flex items-center gap-2 text-sm text-neutral-300">
           <input
             type="checkbox"
@@ -144,8 +144,7 @@ export default function LoginForm() {
           />
           Recordarme
         </label>
-
-      </div>
+      </div> */}
 
       {error && (
         <p className="text-sm text-red-400" role="alert">
@@ -153,8 +152,8 @@ export default function LoginForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={loading} className="w-full">
-        {loading ? "Ingresando..." : "Entrar"}
+      <Button type="submit" disabled={loading} className=" bg-black w-full ">
+        {loading ? "Ingresando..." : "Iniciar sesión"}
       </Button>
     </form>
   );
