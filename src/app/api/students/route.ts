@@ -1,68 +1,75 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-
-//POST: Crear un nuevo estudiante
+//POST: Crear un nuevo estudiante, encargado legal y autorizado a recoger
 export async function POST(request: Request) {
     try {
         const data = await request.json();
-        const cedula = typeof data.cedula === "string" ? data.cedula.trim() : null;
-        const nombreCompleto = typeof data.nombreCompleto === "string" ? data.nombreCompleto.trim() : null;
-        const genero = typeof data.genero === "string" ? data.genero.trim() : null;
-        const nacionalidad = typeof data.nacionalidad === "string" ? data.nacionalidad.trim() : null;
-        const fechaNacimiento = typeof data.fechaNacimiento === "string" ? new Date(data.fechaNacimiento) : null;
-        const telefono = typeof data.telefono === "string" ? data.telefono.trim() : null;
-        const correo = typeof data.correo === "string" ? data.correo.trim() : null;
-        const direccion = typeof data.direccion === "string" ? data.direccion.trim() : null;
-        const gradoEscolar = typeof data.gradoEscolar === "string" ? data.gradoEscolar.trim() : null;
-        const institucion = typeof data.institucion === "string" ? data.institucion.trim() : null;
-        const lugarTrabajo = typeof data.lugarTrabajo === "string" ? data.lugarTrabajo.trim() : null;
-        const ocupacion = typeof data.ocupacion === "string" ? data.ocupacion.trim() : null;
-        const numeroPoliza = typeof data.numeroPoliza === "string" ? data.numeroPoliza.trim() : null;
-        const discapacidad = typeof data.discapacidad === "string" ? data.discapacidad.trim() : null;
-        const detalles = typeof data.detalles === "string" ? data.detalles.trim() : null;
-        const idPrograma = typeof data.idPrograma === "number" ? data.idPrograma : null;
-
-        if (!cedula || !nombreCompleto || !idPrograma) {
-            return NextResponse.json({ error: "Faltan campos requeridos (cedula, nombre completo o idPrograma)" }, { status: 400 });
+        const { estudiante, encargadoLegal, autorizadoRetiro } = data;
+        if (!estudiante || !encargadoLegal || !autorizadoRetiro) {
+            return NextResponse.json({ error: "Faltan datos requeridos (estudiante, encargado legal o autorizado a recoger)" }, { status: 400 });
         }
 
-        const nuevoEstudiante = await prisma.estudiante.create({
-            data: {
-                cedula,
-                nombreCompleto,
-                genero,
-                nacionalidad,
-                fechaNacimiento,
-                telefono,
-                correo,
-                direccion,
-                gradoEscolar,
-                institucion,
-                lugarTrabajo,
-                ocupacion,
-                numeroPoliza,
-                discapacidad,
-                detalles,
-                idPrograma,
-            },
-        });
-        return NextResponse.json(nuevoEstudiante, { status: 201 });
+        if (estudiante.idPrograma) estudiante.idPrograma = Number(estudiante.idPrograma);
+        if (estudiante.fechaNacimiento) estudiante.fechaNacimiento = new Date(estudiante.fechaNacimiento);
 
+        // Estudiante (Cédula y Nombre Completo)
+        if (!estudiante.cedula || !estudiante.nombreCompleto) {
+            return NextResponse.json({ error: "Estudiante: Cédula y Nombre Completo son requeridos." }, { status: 400 });
+        }
+
+        // Encargado Legal (Cédula y Nombre)
+        if (!encargadoLegal.cedula || !encargadoLegal.nombre) {
+            return NextResponse.json({ error: "Encargado Legal: Cédula y Nombre son requeridos." }, { status: 400 });
+        }
+
+        // Autorizado a Recoger (Nombre)
+        if (!autorizadoRetiro.nombre) {
+            return NextResponse.json({ error: "Autorizado a Retiro: Nombre es requerido." }, { status: 400 });
+        }
+
+        //Escritura anidada en la base de datos
+        const nuevoRegistroCompleto = await prisma.estudiante.create({
+            data: {
+                ...estudiante,
+                encargadoLegal: {
+                    create: { ...encargadoLegal }
+                },
+                autorizadoRetiro: {
+                    create: { ...autorizadoRetiro }
+                }
+            }
+        });
+        return NextResponse.json(nuevoRegistroCompleto, { status: 201 });
     } catch (e) {
-        return NextResponse.json({ error: "Error al crear estudiante" }, { status: 500 });
+        console.error("Error en Transacción de Creación Completa:", e);
+
+        // Manejo de error de unicidad (ej: cédula duplicada P2002)
+        if (e && typeof e === 'object' && 'code' in e && e.code === 'P2002') {
+            return NextResponse.json(
+                { error: "Conflicto de datos: Una cédula (Estudiante/Encargado/Autorizado) ya existe." },
+                { status: 409 } // Conflict
+            );
+        }
+
+        // Error general
+        return NextResponse.json(
+            { error: "Error interno del servidor al crear el registro completo." },
+            { status: 500 }
+        );
     }
 }
+
 
 //PUT: Editar un estudiante
 export async function PUT(request: Request) {
     let data: any;
     try {
         data = await request.json();
-        
+
         //Validacion Cedula
         if (!data.cedula || typeof data.cedula !== "string" || data.cedula.trim() === "") {
-            return NextResponse.json({ error: "El campo 'cedula' es requerido y debe ser una cadena no vacía." }, { status: 400 });
+            return NextResponse.json({ error: "El campo 'cedula' es requerido" }, { status: 400 });
         }
         const cedulaAActualizar = data.cedula.trim();
 
@@ -71,8 +78,7 @@ export async function PUT(request: Request) {
         const datosParaActualizar: any = {};
 
         const stringFields = ['genero', 'nacionalidad',
-            'telefono', 'correo', 'direccion', 'gradoEscolar', 'institucion',
-            'lugarTrabajo', 'ocupacion', 'numeroPoliza', 'discapacidad', 'detalles'
+            'telefono', 'correo', 'direccion', 'gradoEscolar', 'institucion','numeroPoliza', 'discapacidad', 'detalles'
         ];
 
         stringFields.forEach((field, index) => {
@@ -80,7 +86,7 @@ export async function PUT(request: Request) {
                 datosParaActualizar[field] = typeof datosRestantes[field] === null ? null : String(datosRestantes[field]).trim();
             }
         });
-        
+
         if (datosRestantes.fechaNacimiento !== undefined) {
             datosParaActualizar.fechaNacimiento = datosRestantes.fechaNacimiento === null ? null : new Date(datosRestantes.fechaNacimiento);
         }
@@ -137,5 +143,5 @@ export async function GET(request: Request) {
         return NextResponse.json(estudiantes);
     } catch (e) {
         return NextResponse.json({ error: "Error al buscar estudiantes" }, { status: 500 });
-    }   
+    }
 }

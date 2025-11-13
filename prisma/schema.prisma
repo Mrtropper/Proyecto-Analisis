@@ -97,12 +97,15 @@ model Estudiante{
   discapacidad    String?  @default("E") @db.VarChar(5) 
   detalles        String?  @map("Detalles") @db.VarChar(255)
   status          String?  @map("Status") @default("A") @db.VarChar(5) 
+
+  encargadoLegal EncargadoLegal?
+  autorizadoRetiro AutorizadoRetiro[]
   @@map("Estudiante")
 }
 
 model EncargadoLegal{
   idEncargado   Int      @id @default(autoincrement())
-  idEstudiante  Int
+  idEstudiante  Int @unique
   nombre        String   @db.VarChar(80) 
   cedula        String?  @db.VarChar(25)
   telefono      String?  @db.VarChar(30)
@@ -110,6 +113,7 @@ model EncargadoLegal{
   lugarTrabajo  String?  @db.VarChar(120)
   ocupacion     String?  @db.VarChar(80)
   @@map("EncargadoLegal")
+  estudiante Estudiante @relation(fields:[idEstudiante], references: [idEstudiante])
 }
 
 model AutorizadoRetiro{
@@ -119,4 +123,5 @@ model AutorizadoRetiro{
   parentesco    String?  @db.VarChar(60)
   telefono      String?  @db.VarChar(30)
   @@map("AutorizadoRetiro")
+  estudiante Estudiante @relation(fields:[idEstudiante], references: [idEstudiante])
 }
