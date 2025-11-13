@@ -16,34 +16,35 @@ export async function GET() {
   }
 }
 
-// POST: Crear un nuevo registro de inventario
+
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-   const { idInventario, idInstrumento, estado } = data;
+    const { idInventario, idInstrumento, Estado } = data;
 
-    if (!idInventario || !idInstrumento || !estado) {
-    return NextResponse.json(
-        { error: "Faltan campos obligatorios (idInventario, idInstrumento, estado)" },
+    // Validación mínima: el ID es el único obligatorio
+    if (!idInventario ) {
+      return NextResponse.json(
+        { error: "El campo 'idInventario' es obligatorio." },
         { status: 400 }
-    );
+      );
     }
 
     const nuevoInventario = await prisma.inventario.create({
-    data: {
+      data: {
         idInventario: String(idInventario),
-        idInstrumento: Number(idInstrumento),
-        estado: String(estado), // 👈 corregido
-    },
+        idInstrumento: idInstrumento ? Number(idInstrumento) : null,
+        Estado: Estado || "Disponible", //valor predeterminado
+      },
     });
-
 
     return NextResponse.json(nuevoInventario, { status: 201 });
   } catch (e) {
     console.error("Error al crear inventario:", e);
     return NextResponse.json(
-      { error: "Error al crear inventario" },
+      { error: "Error al crear inventario"},
       { status: 500 }
     );
   }
 }
+
