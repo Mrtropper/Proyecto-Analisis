@@ -30,21 +30,19 @@ export async function POST(request: Request) {
   try {
     const data: Instrumento = await request.json();
 
-    const idInstrumento =
-      typeof data.idInstrumento === "number" ? data.idInstrumento : Number(data.idInstrumento);
     const nombre = typeof data.nombre === "string" ? data.nombre.trim() : null;
     const familia = typeof data.familia === "string" ? data.familia.trim() : null;
 
     // Validación básica
-    if (!idInstrumento || !nombre || !familia) {
+    if (!nombre || !familia) {
       return NextResponse.json(
-        { error: "idInstrumento, nombre y familia son requeridos" },
+        { error: "Debe complentar todos los espacios del formulario" },
         { status: 400 }
       );
     }
 
     const nuevoInstrumento = await prisma.instrumento.create({
-      data: { idInstrumento, nombre, familia },
+      data: { nombre, familia },
     });
 
     return NextResponse.json(nuevoInstrumento, { status: 201 });
