@@ -4,21 +4,17 @@ import { useState } from "react";
 import Link from "next/link";
 
 export default function InstrumentForm() {
-  const [idInstrumento, setIDInstrumento] = useState("");
   const [nombreInstrumento, setNombreInstrumento] = useState("");
   const [familiaInstrumento, setFamiliaInstrumento] = useState("");
   const [guardando, setGuardando] = useState(false);
 
   const handleGuardar = async () => {
-    // Validación simple
-    if (!idInstrumento || !nombreInstrumento || !familiaInstrumento) {
+    if (!nombreInstrumento || !familiaInstrumento) {
       alert("Por favor complete todos los campos.");
       return;
     }
 
-    // Crear objeto que se enviará a la API
     const nuevoInstrumento = {
-      idInstrumento: Number(idInstrumento),
       nombre: nombreInstrumento,
       familia: familiaInstrumento,
     };
@@ -39,14 +35,9 @@ export default function InstrumentForm() {
         return;
       }
 
-      // Si llega aquí, el guardado fue exitoso
-      const data = await response.json();
-      console.log("Instrumento guardado:", data);
-
       alert("Instrumento guardado correctamente en la base de datos");
 
       // Limpiar formulario después del éxito
-      setIDInstrumento("");
       setNombreInstrumento("");
       setFamiliaInstrumento("");
     } catch (error) {
@@ -65,9 +56,15 @@ export default function InstrumentForm() {
           Agregar Instrumento
         </button>
 
+        <Link href="/dashboard/instruments/inventario">
+          <button className="w-50 bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
+            Inventario
+          </button>
+        </Link>
+
         <Link href="/dashboard/instruments/loan">
           <button className="w-50 bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
-            Prestamo Instruemnto
+            Préstamo Instrumento
           </button>
         </Link>
 
@@ -81,24 +78,11 @@ export default function InstrumentForm() {
       {/* Cuadro principal */}
       <div className="mt-6 p-4 border border-gray-900 rounded">
         <h2 className="text-xl font-semibold text-blue-400">
-          Agregar Instrumento 🎸
+          Agregar Instrumento
         </h2>
         <p className="mt-2 text-neutral-100">
           Ingrese los datos del instrumento
         </p>
-
-        {/* Campo ID Instrumento */}
-        <div className="mt-4">
-          <label className="block text-sm text-neutral-200 mb-1">
-            ID del instrumento
-          </label>
-          <input
-            type="text"
-            value={idInstrumento}
-            onChange={(e) => setIDInstrumento(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-900 text-white rounded focus:outline-none focus:ring focus:ring-blue-400"
-          />
-        </div>
 
         {/* Campo Nombre Instrumento */}
         <div className="mt-4">
