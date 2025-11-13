@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 
-
+//POST: Crear un nuevo estudiante
 export async function POST(request: Request) {
     try {
         const data = await request.json();
@@ -107,4 +107,35 @@ export async function PUT(request: Request) {
             { status: 500 }
         );
     }
+}
+
+
+//GET: Obtener todos los estudiante o un estudiante por cédula o nombre 
+export async function GET(request: Request) {
+    try {
+        const url = new URL(request.url);
+        const cedula = url.searchParams.get("cedula");
+        const nombreCompleto = url.searchParams.get("nombreCompleto");
+
+        const where: any = {};
+
+        if (cedula) {
+            where.cedula = cedula.trim();
+        }
+        if (nombreCompleto) {
+            where.nombreCompleto = {
+                contains: nombreCompleto.trim()
+            };
+        }
+
+        const estudiantes = await prisma.estudiante.findMany({ where });
+
+        if (estudiantes.length === 0 && (cedula || nombreCompleto)) {
+            return NextResponse.json({ message: "No se encontraron estudiantes con los criterios de búsqueda proporcionados." }, { status: 404 });
+        }
+
+        return NextResponse.json(estudiantes);
+    } catch (e) {
+        return NextResponse.json({ error: "Error al buscar estudiantes" }, { status: 500 });
+    }   
 }
