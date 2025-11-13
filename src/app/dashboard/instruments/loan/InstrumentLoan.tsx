@@ -1,17 +1,14 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-
-export default function InstrumentForm() {
-  const [idPrestamo, setIdPrestamo] = useState("");
+export default function InstrumentForm() 
+{
   const [idEstudiante, setIdEstudiante] = useState("");
   const [idInstrumento, setIdInstrumento] = useState("");
   const [idInventario, setIdInventario] = useState("");
   const [fechaEntrega, setFechaEntrega] = useState("");
-  const [estatus, setEstatus] = useState("");
 
   const [showEstudianteModal, setShowEstudianteModal] = useState(false);
   const [showInstrumentoModal, setShowInstrumentoModal] = useState(false);
@@ -19,78 +16,130 @@ export default function InstrumentForm() {
   const [searchEstudiante, setSearchEstudiante] = useState("");
   const [searchInstrumento, setSearchInstrumento] = useState("");
 
-  // Lista simulada de estudiantes (puedes reemplazar luego por tu API)
-  const listaEstudiantes = [
-    { id: "EST001", nombre: "Juan Pérez" },
-    { id: "EST002", nombre: "María López" },
-    { id: "EST003", nombre: "Carlos Rodríguez" },
-    { id: "EST004", nombre: "Ana Gómez" },
+  const listaEstudiantes = 
+  [
+    { id: 2, nombre: "Juan Pérez" },
+    { id: 3, nombre: "María López" },
+    { id: 4, nombre: "Carlos Rodríguez" },
+    { id: 5, nombre: "Ana Gómez" },
   ];
 
-  // Estado para los instrumentos del backend
   const [instrumentosDisponibles, setInstrumentosDisponibles] = useState<
     { idInstrumento: string; nombre: string }[]
   >([]);
 
-  // 🔹 Obtener instrumentos desde la API
+  const obtenerInventarioPorInstrumento = async (idInstrumento: number) => {
+    try {
+      const response = await fetch(`/api/inventario/${idInstrumento}`);
+
+      if (!response.ok) {
+        setIdInventario("No se encontró inventario para este instrumento");
+        return;
+      }
+
+      const data = await response.json();
+      setIdInventario(data.idInventario || "");
+    } catch (error) {
+      console.error("Error al obtener inventario:", error);
+      setIdInventario("");
+    }
+  };
+
+  // Obtener instrumentos desde la API para instrumentos
   useEffect(() => {
     const fetchInstrumentos = async () => {
       try {
-        // 👇 Usa la ruta correcta según tu endpoint
-        const response = await fetch("http://localhost:3000/api/instrumento");
-        
-        if (!response.ok) {
-          throw new Error(`Error HTTP ${response.status}`);
-        }
-
+        const response = await fetch("/api/instrumento");
+        if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
         const data = await response.json();
-        console.log("🎸 Datos recibidos desde la API:", data);
-
-        // 🔹 Mapea solo los campos necesarios
         const formato = data.map(
           (inst: { idInstrumento: string; nombre: string }) => ({
             idInstrumento: inst.idInstrumento,
             nombre: inst.nombre,
           })
         );
-
         setInstrumentosDisponibles(formato);
       } catch (error) {
-        console.error("❌ Error al cargar instrumentos:", error);
+        console.error("Error al cargar instrumentos:", error);
       }
     };
-
     fetchInstrumentos();
   }, []);
 
+  // Buscar el id inventario segun el idInstrumento
+  useEffect(() => {
+    if (!idInstrumento) return;
+    obtenerInventarioPorInstrumento(Number(idInstrumento));
+  }, [idInstrumento]);
 
-
-  // 🔹 Filtros de búsqueda
+  // Filtros de búsqueda
   const filteredEstudiantes = listaEstudiantes.filter(
     (est) =>
-      est.id.toLowerCase().includes(searchEstudiante.toLowerCase()) ||
+      est.id ||
       est.nombre.toLowerCase().includes(searchEstudiante.toLowerCase())
   );
 
   const filteredInstrumentos = instrumentosDisponibles.filter(
-  (inst) =>
-    inst.idInstrumento?.toString().toLowerCase().includes(searchInstrumento.toLowerCase()) ||
-    inst.nombre?.toLowerCase().includes(searchInstrumento.toLowerCase())
-);
+    (inst) =>
+      inst.idInstrumento
+        ?.toString()
+        .toLowerCase()
+        .includes(searchInstrumento.toLowerCase()) ||
+      inst.nombre?.toLowerCase().includes(searchInstrumento.toLowerCase())
+  );
 
+  // Guardar préstamo usando la API
+const handleGuardar = async () => {
+  // Validación básica
+  if (!idEstudiante || !idInstrumento || !idInventario || !fechaEntrega) {
+    alert("Por favor complete todos los campos antes de guardar.");
+    return;
+  }
 
-  // Guardar préstamo (simulado)
-  const handleGuardar = () => {
-    console.log({
-      idPrestamo,
+  try {
+    const fechaFormateada = new Date(fechaEntrega).toISOString().split("T")[0];
+
+    const nuevoPrestamo = {
       idEstudiante,
       idInstrumento,
       idInventario,
-      fechaEntrega,
-      estatus,
+      fechaEntrega: fechaFormateada
+      // El campo Estatus no se envía porque el backend lo maneja con default
+    };
+
+    const response = await fetch("/api/prestamoInstrumento", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(nuevoPrestamo),
     });
-    alert("Datos guardados correctamente");
-  };
+
+    if (response.ok) {
+      alert("Préstamo guardado correctamente.");
+
+        // Actualizar inventario a Prestado
+        await fetch(`/api/inventario/${idInventario}`, 
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ Estado: "Prestado" }),
+        });
+
+      // Limpia los campos después de guardar
+      setIdEstudiante("");
+      setIdInstrumento("");
+      setIdInventario("");
+      setFechaEntrega("");
+    } else {
+      const errorText = await response.text();
+      console.error("Error del servidor:", errorText);
+      alert("No se pudo guardar el préstamo. Verifique los datos o la API.");
+    }
+  } catch (error) {
+    console.error("Error al guardar el préstamo:", error);
+    alert("Ocurrió un error al intentar guardar el préstamo.");
+  }
+};
+
 
   return (
     <div>
@@ -102,41 +151,33 @@ export default function InstrumentForm() {
           </button>
         </Link>
 
+        <Link href="/dashboard/instruments/inventario">
+          <button className="w-50 bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
+            Inventario
+          </button>
+        </Link>
+
         <Link href="/dashboard/instruments/loan">
           <button className="w-50 bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
             Préstamo Instrumento
           </button>
         </Link>
 
-         <Link href="/dashboard/instruments/list">
+        <Link href="/dashboard/instruments/list">
           <button className="w-50 bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
             Lista
           </button>
         </Link>
-
       </div>
 
       {/* Cuadro principal */}
       <div className="mt-6 p-4 border border-gray-900 rounded relative">
         <h2 className="text-xl font-semibold text-blue-400">
-          Registro de Préstamo 🎸
+          Registro de Préstamo
         </h2>
         <p className="mt-2 text-neutral-100">
           Ingrese los datos correspondientes al préstamo del instrumento
         </p>
-
-        {/* Campo ID Préstamo */}
-        <div className="mt-4">
-          <label className="block text-sm text-neutral-200 mb-1">
-            ID del préstamo
-          </label>
-          <input
-            type="text"
-            value={idPrestamo}
-            onChange={(e) => setIdPrestamo(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-900 text-white rounded focus:outline-none focus:ring focus:ring-blue-400"
-          />
-        </div>
 
         {/* Campo Estudiante con modal */}
         <div className="mt-4">
@@ -190,7 +231,7 @@ export default function InstrumentForm() {
           <input
             type="text"
             value={idInventario}
-            onChange={(e) => setIdInventario(e.target.value)}
+            readOnly
             className="w-full px-3 py-2 bg-gray-900 text-white rounded focus:outline-none focus:ring focus:ring-blue-400"
           />
         </div>
@@ -209,34 +250,17 @@ export default function InstrumentForm() {
           />
         </div>
 
-        {/* Campo Estatus */}
-        <div className="mt-4">
-          <label className="block text-sm text-neutral-200 mb-1">
-            Estatus
-          </label>
-          <select
-            value={estatus}
-            onChange={(e) => setEstatus(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-900 text-white rounded focus:outline-none focus:ring focus:ring-blue-400"
-          >
-            <option value="">Seleccionar opción</option>
-            <option value="prestado">Prestado</option>
-            <option value="en mantenimiento">En mantenimiento</option>
-            <option value="disponible">Disponible</option>
-          </select>
-        </div>
-
         {/* Botón Guardar */}
         <div className="flex justify-end mt-6">
           <button
             onClick={handleGuardar}
             className="bg-blue-950 hover:bg-gray-700 text-white px-6 py-2 rounded"
           >
-            Guardar cambios
+            Guardar préstamo
           </button>
         </div>
 
-        {/* MODAL ESTUDIANTE */}
+        {/* MODALES*/}
         {showEstudianteModal && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
             <div className="bg-gray-900 border border-blue-800 rounded-lg p-6 w-96">
@@ -259,7 +283,7 @@ export default function InstrumentForm() {
                       key={est.id}
                       className="px-3 py-2 hover:bg-gray-700 cursor-pointer"
                       onClick={() => {
-                        setIdEstudiante(est.id);
+                        setIdEstudiante(String(est.id));
                         setShowEstudianteModal(false);
                         setSearchEstudiante("");
                       }}
@@ -289,7 +313,6 @@ export default function InstrumentForm() {
           </div>
         )}
 
-        {/* MODAL INSTRUMENTO */}
         {showInstrumentoModal && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
             <div className="bg-gray-900 border border-blue-800 rounded-lg p-6 w-96">
