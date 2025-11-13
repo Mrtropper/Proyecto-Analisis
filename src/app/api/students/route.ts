@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     try {
         const data = await request.json();
         const cedula = typeof data.cedula === "string" ? data.cedula.trim() : null;
-        const nombreCompleto = typeof data.nombreCompleto === "string" ? data.nombreCompleto.trim() : null; 
+        const nombreCompleto = typeof data.nombreCompleto === "string" ? data.nombreCompleto.trim() : null;
         const genero = typeof data.genero === "string" ? data.genero.trim() : null;
         const nacionalidad = typeof data.nacionalidad === "string" ? data.nacionalidad.trim() : null;
         const fechaNacimiento = typeof data.fechaNacimiento === "string" ? new Date(data.fechaNacimiento) : null;
@@ -49,8 +49,62 @@ export async function POST(request: Request) {
         });
         return NextResponse.json(nuevoEstudiante, { status: 201 });
 
-    }catch (e) {
+    } catch (e) {
         return NextResponse.json({ error: "Error al crear estudiante" }, { status: 500 });
     }
 }
 
+//PUT: Editar un estudiante
+export async function PUT(request: Request) {
+    let data: any;
+    try {
+        data = await request.json();
+        
+        //Validacion Cedula
+        if (!data.cedula || typeof data.cedula !== "string" || data.cedula.trim() === "") {
+            return NextResponse.json({ error: "El campo 'cedula' es requerido y debe ser una cadena no vacía." }, { status: 400 });
+        }
+        const cedulaAActualizar = data.cedula.trim();
+
+        // Preparar los datos para la actualización
+        const { cedula, ...datosRestantes } = data;
+        const datosParaActualizar: any = {};
+
+        const stringFields = ['genero', 'nacionalidad',
+            'telefono', 'correo', 'direccion', 'gradoEscolar', 'institucion',
+            'lugarTrabajo', 'ocupacion', 'numeroPoliza', 'discapacidad', 'detalles'
+        ];
+
+        stringFields.forEach((field, index) => {
+            if (datosRestantes[field] !== undefined) {
+                datosParaActualizar[field] = typeof datosRestantes[field] === null ? null : String(datosRestantes[field]).trim();
+            }
+        });
+        
+        if (datosRestantes.fechaNacimiento !== undefined) {
+            datosParaActualizar.fechaNacimiento = datosRestantes.fechaNacimiento === null ? null : new Date(datosRestantes.fechaNacimiento);
+        }
+
+        // Actualizar el estudiante en la base de datos
+        const estudianteActualizado = await prisma.estudiante.update({
+            where: { cedula: cedulaAActualizar },
+            data: datosParaActualizar,
+        });
+        return NextResponse.json(estudianteActualizado);
+
+    } catch (e) {
+        // Estudiante no encontrado
+        if (e && typeof e === 'object' && 'code' in e && e.code === 'P2025') {
+            return NextResponse.json(
+                { error: `Estudiante con cédula ${data.cedula} no encontrado.` },
+                { status: 404 } // Not Found
+            );
+        }
+
+        // Error interno
+        return NextResponse.json(
+            { error: "Error interno del servidor al actualizar el estudiante." },
+            { status: 500 }
+        );
+    }
+}

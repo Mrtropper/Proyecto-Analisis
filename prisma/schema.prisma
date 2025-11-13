@@ -80,7 +80,7 @@ model PermisosModulos {
 
 model Estudiante{
   idEstudiante Int @id @default(autoincrement()) @map("IdEstudiante")
-  cedula String @db.VarChar(25)
+  cedula String @unique @db.VarChar(25)
   idPrograma Int @map("IdPrograma")
   nombreCompleto  String?  @db.VarChar(80)
   genero          String?  @db.VarChar(20)
