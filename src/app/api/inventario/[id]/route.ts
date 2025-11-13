@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+interface Context {
+  params: { id: string };
+}
+
 // PUT: Actualizar un registro del inventario
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const idInventario = params.id;
     const data = await request.json();
-    const { idInstrumento, estado } = data; // 👈 en minúscula
+    const { idInstrumento, Estado } = data;
 
     if (!idInventario) {
       return NextResponse.json(
@@ -19,7 +26,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       where: { idInventario },
       data: {
         idInstrumento: idInstrumento ? Number(idInstrumento) : undefined,
-        estado: estado ? String(estado) : undefined, // 👈 corregido
+        Estado: Estado ? String(Estado) : undefined,
       },
     });
 
@@ -32,6 +39,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     );
   }
 }
+
 
 // DELETE: Eliminar un registro de inventario
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
@@ -58,3 +66,33 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     );
   }
 }
+
+export async function GET(_req: Request, { params }: Context) {
+  try {
+    const idInstrumento = Number(params.id);
+
+    const inventario = await prisma.inventario.findFirst({
+      where: { idInstrumento },
+      select: {
+        idInventario: true,
+      },
+    });
+
+    if (!inventario) {
+      return NextResponse.json(
+        { error: "No se encontró inventario para este instrumento" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(inventario);
+  } catch (e) {
+    console.error("Error al consultar inventario:", e);
+    return NextResponse.json(
+      { error: "Error al consultar inventario" },
+      { status: 500 }
+    );
+  }
+}
+
+
