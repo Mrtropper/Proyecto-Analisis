@@ -60,7 +60,7 @@ export default function RegularStudentForm() {
     setPersonasAutorizadasRelacion("");
     setPersonasAutorizadasTelefono("");
 
-    setMsg(null); // Opcional: limpiar el mensaje debajo del formulario
+    setMsg(null); 
   }
 
   // --- Manejador del modal/alerta ---
@@ -163,7 +163,7 @@ export default function RegularStudentForm() {
       setIsSuccess(false);
     } finally {
       setIsLoading(false);
-      setShowModal(true); // Mostrar el modal al finalizar
+      setShowModal(true); 
     }
   }
 
