@@ -3,49 +3,46 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
-interface Instrumento {
-  idInstrumento: string;
+interface RegistroInstrumento {
+  idInventario: string;
+  idInstrumento: number;
   nombreInstrumento: string;
-  estadoInstrumento: string;
-  idEstudiante?: string; // opcional, por si no se usa todavía
+  Estado: string;
+  idEstudiante: string | number | "";
+  fechaEntrega: string | "";
 }
 
 export default function InstrumentList() {
-  const [showModal, setShowModal] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [instrumentos, setInstrumentos] = useState<Instrumento[]>([]);
+  const [registros, setRegistros] = useState<RegistroInstrumento[]>([]);
   const [busqueda, setBusqueda] = useState("");
 
-  // Cargar los datos desde localStorage
   useEffect(() => {
-    const almacenados = JSON.parse(localStorage.getItem("instrumentos") || "[]");
-    setInstrumentos(almacenados);
+    const cargar = async () => {
+      try {
+        const res = await fetch("/api/inventario");
+        const data = await res.json();
+        setRegistros(data);
+      } catch (e) {
+        console.error("Error cargando inventario:", e);
+      }
+    };
+
+    cargar();
   }, []);
 
-  // Filtrar según búsqueda
-  const instrumentosFiltrados = instrumentos.filter((inst) => {
-    const id = inst.idInstrumento?.toLowerCase() || "";
-    const nombre = inst.nombreInstrumento?.toLowerCase() || "";
-    const estado = inst.estadoInstrumento?.toLowerCase() || "";
-    const estudiante = inst.idEstudiante?.toLowerCase?.() || "";
+  // Filtro
+  const filtrados = registros.filter((r) => {
+    const texto = busqueda.toLowerCase();
 
     return (
-      id.includes(busqueda.toLowerCase()) ||
-      nombre.includes(busqueda.toLowerCase()) ||
-      estado.includes(busqueda.toLowerCase()) ||
-      estudiante.includes(busqueda.toLowerCase())
+      r.idInventario.toLowerCase().includes(texto) ||
+      r.idInstrumento.toString().includes(texto) ||
+      r.nombreInstrumento.toLowerCase().includes(texto) ||
+      r.Estado.toLowerCase().includes(texto) ||
+      r.idEstudiante.toString().toLowerCase().includes(texto) ||
+      r.fechaEntrega.toString().toLowerCase().includes(texto)
     );
   });
-
-
-
-  // Eliminar instrumento
-  const eliminarInstrumento = (id: string) => {
-    const nuevos = instrumentos.filter((i) => i.idInstrumento !== id);
-    localStorage.setItem("instrumentos", JSON.stringify(nuevos));
-    setInstrumentos(nuevos);
-    setShowModal(false);
-  };
 
   return (
     <div>
@@ -54,6 +51,12 @@ export default function InstrumentList() {
         <Link href="/dashboard/instruments">
           <button className="w-50 bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
             Agregar Instrumento
+          </button>
+        </Link>
+
+        <Link href="/dashboard/instruments/inventario">
+          <button className="w-50 bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
+            Inventario
           </button>
         </Link>
 
@@ -68,19 +71,14 @@ export default function InstrumentList() {
             Lista
           </button>
         </Link>
-
       </div>
 
       {/* Contenido principal */}
       <div className="mt-6 p-4 border border-gray-900 rounded">
         <h2 className="text-xl font-semibold text-blue-400">
-          Lista de Instrumentos 🎵
+          Lista de Instrumentos
         </h2>
-        <p className="mt-2 text-neutral-300">
-          Aquí puedes visualizar los instrumentos registrados.
-        </p>
 
-        {/* Barra de búsqueda */}
         <div className="mt-4 mb-4">
           <input
             type="text"
@@ -96,91 +94,47 @@ export default function InstrumentList() {
           <table className="w-full border border-blue-600 rounded">
             <thead>
               <tr className="bg-blue-950 text-blue-300">
-                <th className="border border-blue-600 px-4 py-2 text-left">ID</th>
-                <th className="border border-blue-600 px-4 py-2 text-left">Nombre</th>
-                <th className="border border-blue-600 px-4 py-2 text-left">Estado</th>
-                <th className="border border-blue-600 px-4 py-2 text-left">ID Estudiante</th>
-                <th className="border border-blue-600 px-4 py-2 text-left w-16"></th>
+                <th className="border border-blue-600 px-4 py-2">ID Inventario</th>
+                <th className="border border-blue-600 px-4 py-2">ID Instrumento</th>
+                <th className="border border-blue-600 px-4 py-2">Nombre</th>
+                <th className="border border-blue-600 px-4 py-2">Estado</th>
+                <th className="border border-blue-600 px-4 py-2">ID Estudiante</th>
+                <th className="border border-blue-600 px-4 py-2">Fecha Entrega</th>
+                <th className="border border-blue-600 px-4 py-2 w-16"></th>
               </tr>
             </thead>
 
-                <tbody className="text-neutral-200">
-                {instrumentosFiltrados.length > 0 ? (
-                  instrumentosFiltrados.map((inst) => (
-                    <tr key={inst.idInstrumento} className="bg-neutral-900 hover:bg-neutral-800 transition">
-                      <td className="border border-blue-600 px-4 py-2">{inst.idInstrumento}</td>
-                      <td className="border border-blue-600 px-4 py-2">{inst.nombreInstrumento}</td>
-                      <td className="border border-blue-600 px-4 py-2">{inst.estadoInstrumento}</td>
-                      <td className="border border-blue-600 px-4 py-2">{inst.idEstudiante ?? ""}</td>
-
-                      {/* Celda de acciones: Editar y Eliminar */}
-                      <td className="border border-blue-600 px-2 py-2 text-center w-28">
-                        {/* Editar */}
-                        <button
-                          onClick={() => {
-                            localStorage.setItem("instrumentoEditar", JSON.stringify(inst));
-                            window.location.href = "/dashboard/instruments/update";
-                          }}
-                          className="text-blue-400 hover:text-blue-600 text-xl mr-2"
-                          title="Editar"
-                        >
-                          ✏️
-                        </button>
-
-                        {/* Eliminar */}
-                        <button
-                          onClick={() => {
-                            setSelectedId(inst.idInstrumento);
-                            setShowModal(true);
-                          }}
-                          className="text-red-500 hover:text-red-700 text-xl"
-                          title="Eliminar"
-                        >
-                          🗑️
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr className="bg-neutral-900">
-                    <td colSpan={5} className="text-center text-neutral-400 py-4">
-                      No hay instrumentos registrados.
+            <tbody className="text-neutral-200">
+              {filtrados.length > 0 ? (
+                filtrados.map((r) => (
+                  <tr key={r.idInventario || `invless-${r.idInstrumento}`} className="bg-neutral-900 hover:bg-neutral-800">
+                    <td className="border border-blue-600 px-4 py-2">{r.idInventario}</td>
+                    <td className="border border-blue-600 px-4 py-2">{r.idInstrumento}</td>
+                    <td className="border border-blue-600 px-4 py-2">{r.nombreInstrumento}</td>
+                    <td className="border border-blue-600 px-4 py-2">{r.Estado}</td>
+                    <td className="border border-blue-600 px-4 py-2">{r.idEstudiante}</td>
+                    <td className="border border-blue-600 px-4 py-2">
+                      {r.fechaEntrega ? r.fechaEntrega.toString().split("T")[0] : ""}
+                    </td>
+                    <td className="border border-blue-600 px-2 py-2 w-28 text-center">
+                        <div className="flex justify-center gap-6">
+                          <span>✏️</span>
+                          <span>🗑️</span>
+                        </div>
                     </td>
                   </tr>
-                )}
-              </tbody>
-
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="text-center text-neutral-400 py-4">
+                    No hay instrumentos registrados.
+                  </td>
+                </tr>
+              )}
+            </tbody>
           </table>
         </div>
       </div>
-
-      {/* Modal para confirmar si desea eliminar */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-neutral-900 border border-blue-600 p-6 rounded shadow-lg w-80">
-            <h3 className="text-lg font-semibold text-white mb-4">Advertencia</h3>
-            <p className="text-neutral-300 mb-6">
-              ¿Quieres eliminar este instrumento?
-            </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowModal(false)}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
-              >
-                Cancelar
-              </button>
-
-              <button
-                onClick={() => eliminarInstrumento(selectedId!)}
-                className="bg-blue-900 hover:bg-blue-700 text-white px-4 py-2 rounded"
-              >
-                Aceptar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
