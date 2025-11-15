@@ -58,38 +58,58 @@ export async function GET(request: Request)
 
 
 // POST: Crear un nuevo préstamo
-export async function POST(request: Request) 
-{
-  try 
-  {
+export async function POST(request: Request) {
+  try {
     const data = await request.json();
     const { idEstudiante, idInstrumento, idInventario, fechaEntrega, estatus } = data;
 
-    // Validación: estatus NO es obligatorio porque el esquema tiene default
-    if (!idEstudiante || !idInstrumento || !idInventario || !fechaEntrega) 
-    {
+    // Validación de campos obligatorios
+    if (!idEstudiante || !idInstrumento || !idInventario || !fechaEntrega) {
       return NextResponse.json(
         { error: "Faltan campos obligatorios" },
         { status: 400 }
       );
     }
 
+    // Validación de fecha
+    const fecha = new Date(fechaEntrega);
+    if (isNaN(fecha.getTime())) {
+      return NextResponse.json(
+        { error: "La fecha proporcionada no es válida." },
+        { status: 400 }
+      );
+    }
+
+    // Verificar si el inventario ya está Prestado
+    const inventario = await prisma.inventario.findUnique({
+      where: { idInventario: String(idInventario) }
+    });
+
+    if (inventario?.Estado?.toLowerCase() === "prestado") {
+      return NextResponse.json(
+        { error: "El instrumento ya está prestado y no se puede asignar nuevamente." },
+        { status: 400 }
+      );
+    }
+
+    // Crear el préstamo
     const nuevoPrestamo = await prisma.prestamoInstrumento.create({
-      data: 
-      {
+      data: {
         idEstudiante: Number(idEstudiante),
         idInstrumento: Number(idInstrumento),
         idInventario: String(idInventario),
-        fechaEntrega: new Date(fechaEntrega),
-
-        // Prisma usa el nombre EXACTO del campo: Estatus
-        Estatus: estatus || "Prestado"
+        fechaEntrega: fecha,
+        Estatus: estatus || "Prestado",
       },
     });
 
     return NextResponse.json(nuevoPrestamo, { status: 201 });
+
   } catch (e) {
     console.error("Error al crear préstamo:", e);
-    return NextResponse.json({ error: "Error al crear préstamo"}, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al crear préstamo" },
+      { status: 500 }
+    );
   }
 }
