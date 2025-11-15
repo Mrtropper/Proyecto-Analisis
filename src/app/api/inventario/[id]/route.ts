@@ -5,7 +5,7 @@ interface Context {
   params: { id: string };
 }
 
-// PUT: Actualizar un registro del inventario
+// PUT: Actualizar solo el estado del inventario
 export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
@@ -13,7 +13,7 @@ export async function PUT(
   try {
     const idInventario = params.id;
     const data = await request.json();
-    const { idInstrumento, Estado } = data;
+    const { Estado } = data;
 
     if (!idInventario) {
       return NextResponse.json(
@@ -22,11 +22,17 @@ export async function PUT(
       );
     }
 
+    if (!Estado) {
+      return NextResponse.json(
+        { error: "Debe proporcionar un estado válido" },
+        { status: 400 }
+      );
+    }
+
     const inventarioActualizado = await prisma.inventario.update({
       where: { idInventario },
       data: {
-        idInstrumento: idInstrumento ? Number(idInstrumento) : undefined,
-        Estado: Estado ? String(Estado) : undefined,
+        Estado: String(Estado),
       },
     });
 
