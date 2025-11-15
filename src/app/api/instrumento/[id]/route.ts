@@ -31,23 +31,29 @@ export async function GET(_request: Request, context: Context) {
 export async function PUT(request: Request, context: Context) {
   try {
     const id = Number(context?.params?.id);
-    const data: Partial<Instrumento> = await request.json();
+    const data = await request.json();
 
     const nombre = typeof data.nombre === "string" ? data.nombre.trim() : null;
     const familia = typeof data.familia === "string" ? data.familia.trim() : null;
 
     if (!nombre || !familia) {
-      return NextResponse.json({ error: "Nombre y familia son requeridos" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Nombre y familia son requeridos" },
+        { status: 400 }
+      );
     }
 
-    const instrumentoActualizado: Instrumento = await prisma.instrumento.update({
+    const instrumentoActualizado = await prisma.instrumento.update({
       where: { idInstrumento: id },
       data: { nombre, familia },
     });
 
     return NextResponse.json(instrumentoActualizado);
   } catch (e) {
-    return NextResponse.json({ error: "Error al editar instrumento", e }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al editar instrumento", details: e },
+      { status: 500 }
+    );
   }
 }
 
