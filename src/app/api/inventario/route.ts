@@ -2,47 +2,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// GET: Lista completa de instrumentos con sus datos de inventario y préstamo (si existen)
+// GET: Lista del inventario
 export async function GET() {
   try {
-    // 1. Traer todos los instrumentos
-    const instrumentos = await prisma.instrumento.findMany();
+    const inventarios = await prisma.inventario.findMany({
+      select: {
+        idInventario: true,
+        idInstrumento: true,
+        Estado: true,   
+      },
+      orderBy: {
+        idInventario: "asc",
+      },
+    });
 
-    // 2. Traer inventarios
-    const inventarios = await prisma.inventario.findMany();
-
-    const lista = await Promise.all(
-      instrumentos.map(async (inst) => {
-        // Buscar inventario asociado
-        const inventario = inventarios.find(
-          (inv) => inv.idInstrumento === inst.idInstrumento
-        );
-
-        // Si existe inventario, buscar préstamo
-        let prestamo = null;
-        if (inventario) {
-          prestamo = await prisma.prestamoInstrumento.findFirst({
-            where: { idInventario: inventario.idInventario },
-            orderBy: { idPrestamo: "desc" },
-          });
-        }
-
-        return {
-          idInstrumento: inst.idInstrumento,
-          nombreInstrumento: inst.nombre,
-
-          // Inventario si existe
-          idInventario: inventario?.idInventario || "",
-          Estado: inventario?.Estado || "",
-
-          // Préstamo si existe
-          idEstudiante: prestamo?.idEstudiante || "",
-          fechaEntrega: prestamo?.fechaEntrega || "",
-        };
-      })
-    );
-
-    return NextResponse.json(lista);
+    return NextResponse.json(inventarios);
   } catch (e) {
     console.error("Error al listar inventario:", e);
     return NextResponse.json(
@@ -51,6 +25,7 @@ export async function GET() {
     );
   }
 }
+
 
 
 export async function POST(request: Request) {
