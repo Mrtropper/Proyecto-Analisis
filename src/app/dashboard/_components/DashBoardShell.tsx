@@ -56,8 +56,8 @@ export default function DashboardShell({
                   Modificar Roles
                 </Link>
 
-                <Link href="/" className="hover:text-white">
-                  Cosa (salir)
+                <Link href="/dashboard/profesor" className="hover:text-white">
+                  Profesores
                 </Link>
               </>
             )}

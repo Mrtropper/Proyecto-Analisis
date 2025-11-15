@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "./globals.css"; // si usas Tailwind
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "MyApp",
@@ -13,7 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className="min-h-dvh bg-neutral-950">{children}</body>
+      <body className="min-h-dvh bg-neutral-950">
+  {children}
+      </body>
     </html>
   );
 }
