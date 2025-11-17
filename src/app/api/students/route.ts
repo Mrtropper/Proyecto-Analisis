@@ -126,7 +126,8 @@ export async function GET(request: Request) {
         const where: any = {};
 
         if (cedula) {
-            where.cedula = cedula.trim();
+            const cleanCedula = cedula.trim().replace(/-/g,'');
+            where.cedula = cleanCedula;
         }
         if (nombreCompleto) {
             where.nombreCompleto = {
