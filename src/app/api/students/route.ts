@@ -167,3 +167,57 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Error al buscar estudiantes" }, { status: 500 });
     }
 }
+
+//PATCH: Actualizar solo el campo 'status' de un estudiante por cédula
+export async function PATCH(request: Request) {
+    let data: any;
+    try {
+        data = await request.json();
+
+        // 1. Validación de campos requeridos
+        if (!data.cedula || typeof data.cedula !== "string" || data.cedula.trim() === "") {
+            return NextResponse.json({ error: "El campo 'cedula' es requerido para identificar al estudiante." }, { status: 400 });
+        }
+        // Validamos la nueva variable 'status'
+        if (!data.status || typeof data.status !== "string" || data.status.trim() === "") {
+            return NextResponse.json({ error: "El campo 'status' es requerido para la actualización." }, { status: 400 });
+        }
+
+        const cedulaAActualizar = data.cedula.trim();
+        const nuevoEstado = data.status.trim(); // Usamos 'status'
+
+        // 2. Actualizar solo el campo 'status'
+        const estudianteActualizado = await prisma.estudiante.update({
+            where: { cedula: cedulaAActualizar },
+            data: {
+                status: nuevoEstado, // Campo actualizado a 'status'
+            },
+            // Seleccionar campos clave para la respuesta
+            select: {
+                idEstudiante: true,
+                nombreCompleto: true,
+                cedula: true,
+                // Asegúrate de que este campo exista en tu modelo
+                status: true, 
+            }
+        });
+
+        return NextResponse.json(estudianteActualizado);
+
+    } catch (e) {
+        // Manejo de error de estudiante no encontrado (P2025 de Prisma)
+        if (e && typeof e === 'object' && 'code' in e && e.code === 'P2025') {
+            return NextResponse.json(
+                { error: `Estudiante con cédula ${data?.cedula || 'desconocida'} no encontrado.` },
+                { status: 404 } // Not Found
+            );
+        }
+
+        console.error("Error en PATCH de Estado de Matrícula:", e);
+        // Error general
+        return NextResponse.json(
+            { error: "Error interno del servidor al actualizar el estado de matrícula." },
+            { status: 500 }
+        );
+    }
+}

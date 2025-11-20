@@ -7,6 +7,7 @@ interface Student {
     idEstudiante: number;
     nombreCompleto: string;
     cedula: string;
+    status: status;
 }
 
 interface StudentDetail extends Student {
@@ -25,9 +26,92 @@ interface StudentDetail extends Student {
     detalles: string | null;
 }
 
+type status = "A" | "I";
+
 const API_URL = "/api/students";
 
+// --- Componente ModalStatus ---
+interface ModalStatusProps {
+    idEstudiante: number;
+    nombreCompleto: string;
+    cedula: string;
+    currentStatus: status; // Estado actual, podrías cargarlo si lo tuvieras
+    onClose: () => void;
+    onSave: (cedula: string, nombreCompleto: string, newStatus: status) => void;
+}
 
+const ModalStatus = ({ idEstudiante, nombreCompleto, cedula, currentStatus, onClose, onSave }: ModalStatusProps) => {
+    // Usamos el estado actual como valor inicial
+    const [selectedStatus, setSelectedStatus] = useState<status>(currentStatus);
+
+    const handleSave = () => {
+        onSave(cedula, nombreCompleto, selectedStatus);
+        onClose(); // Cierra el modal después de guardar
+    };
+
+    return (
+        // Overlay (fondo oscuro que cubre la pantalla)
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+            {/* Contenedor del Modal */}
+            <div className="bg-neutral-900 rounded-lg p-6 shadow-2xl w-full max-w-sm border border-neutral-700">
+                <h3 className="text-xl font-bold text-white mb-4">
+                    Cambiar Estado de Matrícula
+                </h3>
+                <p className="text-neutral-300 mb-6">
+                    Estudiante: **{nombreCompleto}**
+                </p>
+                <p className="text-neutral-300 mb-6 text-sm">
+                    Cédula: {cedula}
+                </p>
+
+                {/* Radio Buttons */}
+                <div className="space-y-4 mb-8">
+                    {/* Opción Activo */}
+                    <label className="flex items-center text-white cursor-pointer">
+                        <input
+                            type="radio"
+                            name="status"
+                            value="Activo"
+                            checked={selectedStatus === "A"}
+                            onChange={() => setSelectedStatus("A")}
+                            className="form-radio h-4 w-4 text-emerald-500 border-neutral-600 bg-neutral-700"
+                        />
+                        <span className="ml-3 text-sm">Activo (Matriculado)</span>
+                    </label>
+
+                    {/* Opción Inactivo */}
+                    <label className="flex items-center text-white cursor-pointer">
+                        <input
+                            type="radio"
+                            name="status"
+                            value="Inactivo"
+                            checked={selectedStatus === "I"}
+                            onChange={() => setSelectedStatus("I")}
+                            className="form-radio h-4 w-4 text-red-500 border-neutral-600 bg-neutral-700"
+                        />
+                        <span className="ml-3 text-sm">Inactivo (Retirado/No matriculado)</span>
+                    </label>
+                </div>
+
+                {/* Botones de Acción */}
+                <div className="flex justify-end gap-3">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 text-sm font-semibold rounded-lg text-neutral-300 bg-neutral-700 hover:bg-neutral-600 transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        className="px-4 py-2 text-sm font-semibold rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition-colors"
+                    >
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function SearchForm() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -35,6 +119,9 @@ export default function SearchForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const router = useRouter();
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
     // Función para manejar la búsqueda/filtrado
     const handleSearch = useCallback(async (initialLoad = false) => {
@@ -64,6 +151,12 @@ export default function SearchForm() {
 
             if (response.ok) {
                 if (Array.isArray(responseData)) {
+                    const studentsWithStatus: Student[] = responseData.map(
+                        (s: any) => ({
+                            ...s,
+                            status: s.status || "A", // Asumiendo 'status' viene de la API o se defaultea
+                        })
+                    );
                     setFilteredStudents(responseData);
                     setErrorMsg(null);
                 } else {
@@ -92,11 +185,51 @@ export default function SearchForm() {
         router.push(`/dashboard/students/searchStudents/${studentId}`);
     };
 
-    const handleStatus = (studentId: number) => {
-        alert(`Cambiar estado/matrícula del estudiante con ID: ${studentId}`);
+    //Recibe el objeto Student completo
+    const handleStatus = (student: Student) => {
+        setSelectedStudent(student);
+        setIsModalOpen(true);
     };
 
+    //Implementación de la llamada PATCH
+    const handleSaveStatus = async (cedula: string, nombreCompleto: string, newStatus: status) => {
+        setIsLoading(true);
+        setErrorMsg(null);
 
+        try {
+            const response = await fetch(API_URL, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    cedula: cedula, // Usamos la cédula para el endpoint PATCH
+                    status: newStatus,
+                }),
+            });
+
+            if (response.ok) {
+                // Mostrar mensaje y recargar la lista para reflejar el cambio
+                alert(`Estado de ${nombreCompleto} actualizado a: ${newStatus}.`);
+                setIsModalOpen(false); // Cerrar el modal
+                await handleSearch(); // Recargar la lista de estudiantes
+            } else {
+                // Error al actualizar
+                const errorData = await response.json();
+                const errorMessage = errorData.error || `Error ${response.status} al actualizar el estado.`;
+                setErrorMsg(errorMessage);
+                alert(`Error al actualizar el estado: ${errorMessage}`);
+                setIsModalOpen(false); // Cerrar el modal en caso de error
+            }
+        } catch (e) {
+            console.error("Error al conectar con la API para actualizar el estado:", e);
+            setErrorMsg("Error de conexión al intentar actualizar el estado.");
+            alert("Error de conexión al intentar actualizar el estado.");
+            setIsModalOpen(false); // Cerrar el modal
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="p-4">
@@ -127,27 +260,37 @@ export default function SearchForm() {
                     <thead className="bg-neutral-800">
                         <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
-
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
                                 Nombre Completo
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
                                 Número Identidad
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                                Estado
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
                             </th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-800">
                         {filteredStudents.map((student) => (
                             <tr key={student.idEstudiante} className="hover:bg-neutral-800/50 transition-colors duration-150">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-500">
-                                    {student.idEstudiante}
-                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-base font-semibold text-neutral-200">
                                     {student.nombreCompleto}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
                                     {student.cedula}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <span 
+                                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                            student.status === 'A' 
+                                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300' 
+                                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                                        }`}
+                                    >
+                                        {student.status}
+                                    </span>
                                 </td>
 
                                 {/* COLUMNA DE BOTONES */}
@@ -160,7 +303,7 @@ export default function SearchForm() {
                                             Ver
                                         </button>
                                         <button
-                                            onClick={() => handleStatus(student.idEstudiante)}
+                                            onClick={() => handleStatus(student)}
                                             className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                                         >
                                             Estado
@@ -187,6 +330,17 @@ export default function SearchForm() {
                 )}
 
             </div>
+            {isModalOpen && selectedStudent && (
+                <ModalStatus
+                    idEstudiante={selectedStudent.idEstudiante}
+                    nombreCompleto={selectedStudent.nombreCompleto}
+                    cedula={selectedStudent.cedula}
+                    currentStatus={selectedStudent.status} 
+                    onClose={() => setIsModalOpen(false)}
+                    onSave={handleSaveStatus}
+                />
+            )}
+
         </div>
     );
 }

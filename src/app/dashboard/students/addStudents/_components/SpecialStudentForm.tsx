@@ -207,7 +207,7 @@ export default function SpecialStudentForm() {
 
               {/* Número de Cédula */}
               <label className="block text-base font-semibold text-white">Número de Cédula</label>
-              <input value={cedula} onChange={(e) => setCedula(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              <input value={cedula} onChange={(e) => setCedula(e.target.value)} placeholder="Formato: x-xxxx-xxxx" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Género (Usando select para mejor control) */}
               <label className="block text-base font-semibold text-white">Género</label>
@@ -269,7 +269,7 @@ export default function SpecialStudentForm() {
               {/* Número de Cédula */}
               <label className="block text-base font-semibold text-white">Número de Cédula</label>
               <input
-                value={encargadoCedula} onChange={(e) => setEncargadoCedula(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+                value={encargadoCedula} onChange={(e) => setEncargadoCedula(e.target.value)} placeholder="Formato: x-xxxx-xxxx" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Número de Teléfono */}
               <label className="block text-base font-semibold text-white">Número de Teléfono</label>
