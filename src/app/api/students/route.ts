@@ -115,24 +115,44 @@ export async function PUT(request: Request) {
     }
 }
 
-
 //GET: Obtener todos los estudiante o un estudiante por cédula o nombre 
 export async function GET(request: Request) {
     try {
         const url = new URL(request.url);
         const cedula = url.searchParams.get("cedula");
         const nombreCompleto = url.searchParams.get("nombreCompleto");
+        const idEstudiante = url.searchParams.get("idEstudiante");
 
         const where: any = {};
+        let hasSearchCriteria = false;
 
-        if (cedula) {
+        if (idEstudiante) {
+            const studentId = parseInt(idEstudiante, 10);
+            
+            // Validar que el ID sea un número válido
+            if (isNaN(studentId)) {
+                 return NextResponse.json({ error: "El ID de estudiante proporcionado no es válido." }, { status: 400 });
+            }
+            
+            // Asignar el ID (que es un número) al objeto where
+            where.idEstudiante = studentId; 
+            hasSearchCriteria = true;
+        } 
+        
+        // 2. Si NO hay ID, buscar por Cédula (Búsqueda exacta)
+        else if (cedula) {
             const cleanCedula = cedula.trim().replace(/-/g,'');
             where.cedula = cleanCedula;
+            hasSearchCriteria = true;
         }
-        if (nombreCompleto) {
+        
+        // 3. Si NO hay ID ni Cédula, buscar por Nombre (Búsqueda por coincidencia)
+        else if (nombreCompleto) {
             where.nombreCompleto = {
                 contains: nombreCompleto.trim()
+                // Opcional: Agregar mode: 'insensitive' si tu base de datos lo soporta
             };
+            hasSearchCriteria = true;
         }
 
         const estudiantes = await prisma.estudiante.findMany({ where });
@@ -143,6 +163,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(estudiantes);
     } catch (e) {
+        console.error("Error al buscar estudiantes:", e);
         return NextResponse.json({ error: "Error al buscar estudiantes" }, { status: 500 });
     }
 }

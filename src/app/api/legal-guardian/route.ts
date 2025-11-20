@@ -1,6 +1,46 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+//GET: Obtener una encargado legal por el ID del estudiante
+export async function GET(request: Request) {
+    try {
+        const url = new URL(request.url);
+        //Obtener el idEstudiante de los parámetros de consulta
+        const idEstudiante = url.searchParams.get("idEstudiante"); 
+        
+        if (!idEstudiante) {
+            return NextResponse.json({ error: "El ID de estudiante es requerido para consultar el encargado legal." }, { status: 400 });
+        }
+        
+        const studentIdNumber = parseInt(idEstudiante, 10);
+        
+        if (isNaN(studentIdNumber)) {
+             return NextResponse.json({ error: "ID de estudiante inválido." }, { status: 400 });
+        }
+        
+        //Consulta a Prisma: busca el EncargadoLegal que tiene el idEstudiante
+        const encargado = await prisma.encargadoLegal.findFirst({
+            where: { 
+                idEstudiante: studentIdNumber 
+            },
+        });
+        
+        if (!encargado) {
+            // Devuelve 404 si no hay un encargado asociado a ese estudiante
+            return NextResponse.json(
+                { message: `No se encontró Encargado Legal para el estudiante ID: ${idEstudiante}` }, 
+                { status: 404 }
+            );
+        }
+        
+        // Éxito: devuelve el objeto del encargado
+        return NextResponse.json(encargado);
+    } catch (e) {
+        console.error("Error al buscar encargado legal:", e);
+        return NextResponse.json({ error: "Error interno del servidor al buscar el encargado legal." }, { status: 500 });
+    }
+}
+
 //PUT: Actualizar un encargado legal
 export async function PUT(request: Request) {
     let data : any; 

@@ -4,12 +4,30 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface Student {
-    id: number;
+    idEstudiante: number;
     nombreCompleto: string;
     cedula: string;
 }
 
+interface StudentDetail extends Student {
+    genero: string | null;
+    nacionalidad: string | null;
+    fechaNacimiento: string | null;
+    telefono: string | null;
+    correo: string | null;
+    direccion: string | null;
+    gradoEscolar: string | null;
+    institucion: string | null;
+    lugarTrabajo: string | null;
+    ocupacion: string | null;
+    numeroPoliza: string | null;
+    discapacidad: string | null;
+    detalles: string | null;
+}
+
 const API_URL = "/api/students";
+
+
 
 export default function SearchForm() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -57,7 +75,7 @@ export default function SearchForm() {
                 setErrorMsg(errorMessage);
                 setFilteredStudents([]);
             }
-            
+
         } catch (e) {
             console.error("Error al conectar con la API:", e);
             setErrorMsg("Error de conexion. No se pudo contactar el servidor.");
@@ -69,9 +87,9 @@ export default function SearchForm() {
     useEffect(() => {
         handleSearch(true);
     }, [handleSearch]);
-    
-    const handleView = (studentId: number) => {
-        router.push(`/students/${studentId}`);
+
+    const seeStudent = (studentId: number) => {
+        router.push(`/dashboard/students/searchStudents/${studentId}`);
     };
 
     const handleStatus = (studentId: number) => {
@@ -109,7 +127,7 @@ export default function SearchForm() {
                     <thead className="bg-neutral-800">
                         <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
-                            
+
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
                                 Nombre Completo
@@ -121,9 +139,9 @@ export default function SearchForm() {
                     </thead>
                     <tbody className="divide-y divide-neutral-800">
                         {filteredStudents.map((student) => (
-                            <tr key={student.id} className="hover:bg-neutral-800/50 transition-colors duration-150">
+                            <tr key={student.idEstudiante} className="hover:bg-neutral-800/50 transition-colors duration-150">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-500">
-                                    {student.id}
+                                    {student.idEstudiante}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-base font-semibold text-neutral-200">
                                     {student.nombreCompleto}
@@ -136,13 +154,13 @@ export default function SearchForm() {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div className="flex gap-2">
                                         <button
-                                            onClick={() => handleView(student.id)}
+                                            onClick={() => seeStudent(student.idEstudiante)}
                                             className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
                                         >
                                             Ver
                                         </button>
                                         <button
-                                            onClick={() => handleStatus(student.id)}
+                                            onClick={() => handleStatus(student.idEstudiante)}
                                             className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                                         >
                                             Estado

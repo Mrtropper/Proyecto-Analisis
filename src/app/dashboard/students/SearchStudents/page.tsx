@@ -2,7 +2,7 @@
 
 
 import DashboardShell from "@/app/dashboard/_components/DashBoardShell";
-import SearchForm from "./searchForm";
+import SearchForm from "./_components/searchForm";
 
 export default function SearchPage() {
     return (

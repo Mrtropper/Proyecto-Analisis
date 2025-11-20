@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import DashboardShell from "@/app/dashboard/_components/DashBoardShell";
-import RegularStudentForm from "@/app/dashboard/students/addStudents/RegularStudentForm";
-import KidsStudentForm from "@/app/dashboard/students/addStudents/KidsStudentForm";
-import SpecialStudentForm from "@/app/dashboard/students/addStudents/SpecialStudentForm";
-import ServiceStudentForm from "@/app/dashboard/students/addStudents/ServiceStudentForm"; 
+import RegularStudentForm from "@/app/dashboard/students/addStudents/_components/RegularStudentForm";
+import KidsStudentForm from "@/app/dashboard/students/addStudents/_components/KidsStudentForm";
+import SpecialStudentForm from "@/app/dashboard/students/addStudents/_components/SpecialStudentForm";
+import ServiceStudentForm from "@/app/dashboard/students/addStudents/_components/ServiceStudentForm"; 
 
 type StudentType = "REGULAR" | "KIDS" | "SPECIAL" | "SERVICE";
 
