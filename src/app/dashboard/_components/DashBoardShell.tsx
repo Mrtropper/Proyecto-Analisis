@@ -121,9 +121,13 @@ export default function DashboardShell({
                     </div>
                   )}
                 </div>
-                
+
                 <Link href="/dashboard/profesor" className="hover:text-white">
                   Profesores
+                </Link>
+
+                <Link href="/dashboard/instruments" className="hover:text-white">
+                  Instrumentos
                 </Link>
 
                 <Link href="/" className="hover:text-white">
