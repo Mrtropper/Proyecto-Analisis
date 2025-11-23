@@ -59,16 +59,27 @@ export default function DashboardShell({
                   Modificar Roles
                 </Link>
 
-<<<<<<< HEAD
                 <div className="relative">
-                  <button onClick={() => setIsGestionOpen(!isGestionOpen)} className="hover:text-white flex items-center gap-1">
+                  <button
+                    onClick={() => setIsGestionOpen(!isGestionOpen)}
+                    className="hover:text-white flex items-center gap-1"
+                  >
                     Gestión Estudiantes
-                    <svg className={`w-4 h-4 transition-transform duration-200 ${isGestionOpen ? "rotate-180" : "rotate-0"
-                      }`} fill="none"
+                    <svg
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        isGestionOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                      fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
                     </svg>
                   </button>
 
@@ -110,13 +121,13 @@ export default function DashboardShell({
                     </div>
                   )}
                 </div>
+                
+                <Link href="/dashboard/profesor" className="hover:text-white">
+                  Profesores
+                </Link>
 
                 <Link href="/" className="hover:text-white">
                   Cosa (salir)
-=======
-                <Link href="/dashboard/profesor" className="hover:text-white">
-                  Profesores
->>>>>>> origin/ramaFabri
                 </Link>
               </>
             )}
