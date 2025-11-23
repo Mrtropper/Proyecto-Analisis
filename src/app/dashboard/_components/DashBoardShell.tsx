@@ -59,6 +59,7 @@ export default function DashboardShell({
                   Modificar Roles
                 </Link>
 
+<<<<<<< HEAD
                 <div className="relative">
                   <button onClick={() => setIsGestionOpen(!isGestionOpen)} className="hover:text-white flex items-center gap-1">
                     Gestión Estudiantes
@@ -112,6 +113,10 @@ export default function DashboardShell({
 
                 <Link href="/" className="hover:text-white">
                   Cosa (salir)
+=======
+                <Link href="/dashboard/profesor" className="hover:text-white">
+                  Profesores
+>>>>>>> origin/ramaFabri
                 </Link>
               </>
             )}
