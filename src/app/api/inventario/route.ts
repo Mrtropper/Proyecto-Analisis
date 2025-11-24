@@ -9,7 +9,7 @@ export async function GET() {
       select: {
         idInventario: true,
         idInstrumento: true,
-        Estado: true,   
+        estado: true,   
       },
       orderBy: {
         idInventario: "asc",
@@ -31,7 +31,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { idInventario, idInstrumento, Estado } = data;
+    const { idInventario, idInstrumento, estado } = data;
 
     // Validación mínima: el ID es el único obligatorio
     if (!idInventario ) {
@@ -44,8 +44,8 @@ export async function POST(request: Request) {
     const nuevoInventario = await prisma.inventario.create({
       data: {
         idInventario: String(idInventario),
-        idInstrumento: idInstrumento ? Number(idInstrumento) : null,
-        Estado: Estado || "Disponible", //valor predeterminado
+        idInstrumento: Number(idInstrumento),
+        estado: estado || "Disponible", //valor predeterminado
       },
     });
 
