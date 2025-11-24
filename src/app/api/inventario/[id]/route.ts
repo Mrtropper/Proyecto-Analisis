@@ -13,7 +13,7 @@ export async function PUT(
   try {
     const idInventario = params.id;
     const data = await request.json();
-    const { Estado } = data;
+    const { estado } = data;
 
     if (!idInventario) {
       return NextResponse.json(
@@ -22,7 +22,7 @@ export async function PUT(
       );
     }
 
-    if (!Estado) {
+    if (!estado) {
       return NextResponse.json(
         { error: "Debe proporcionar un estado válido" },
         { status: 400 }
@@ -32,7 +32,7 @@ export async function PUT(
     const inventarioActualizado = await prisma.inventario.update({
       where: { idInventario },
       data: {
-        Estado: String(Estado),
+        estado: String(estado),
       },
     });
 
