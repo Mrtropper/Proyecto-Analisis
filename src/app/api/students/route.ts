@@ -1,3 +1,4 @@
+//src/app/api/students/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -62,24 +63,40 @@ export async function POST(request: Request) {
 
 
 // GET: Listar todos los estudiantes
-export async function GET() {
-  try {
-    const estudiante = await prisma.estudiante.findMany({
-      select: {
-        idEstudiante: true,
-        nombreCompleto: true,
-        cedula: true,
-      },
-    });
+export async function GET(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const nombreCompleto = searchParams.get('nombreCompleto');
+        const cedula = searchParams.get('cedula');
 
-    return NextResponse.json(estudiante);
-  } catch (error) {
-    console.error("Error al listar estudiante:", error);
-    return NextResponse.json(
-      { error: "Error al listar estudiante" },
-      { status: 500 }
-    );
-  }
+        const whereClause: any = {};
+
+        if (nombreCompleto) {
+            whereClause.nombreCompleto = {
+                contains: nombreCompleto,
+            }
+        } else if (cedula){
+            whereClause.cedula = cedula;
+        }
+
+        const estudiante = await prisma.estudiante.findMany({
+            where: whereClause,
+            select: {
+                idEstudiante: true,
+                nombreCompleto: true,
+                cedula: true,
+                status: true,
+            },
+        });
+
+        return NextResponse.json(estudiante);
+    } catch (error) {
+        console.error("Error al listar estudiante:", error);
+        return NextResponse.json(
+            { error: "Error al listar estudiante" },
+            { status: 500 }
+        );
+    }
 }
 
 

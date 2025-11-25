@@ -17,6 +17,8 @@ interface StudentData {
     direccion: string | null;
     gradoEscolar: string | null;
     institucion: string | null;
+    lugarTrabajo: string | null;
+    ocupacion: string | null;
     numeroPoliza: string | null;
     discapacidad: string | null;
     detalles: string | null;
@@ -43,7 +45,6 @@ const API_LEGAL_GUARDIAN = "/api/legal-guardian";
 const API_AUTHORIZED_PICKPUPS = "/api/authorized-pickups";
 
 export default function StudentDetailView({ studentId }: { studentId: string }) {
-
     const router = useRouter();
     const idToSearch = parseInt(studentId, 10);
 
@@ -67,29 +68,32 @@ export default function StudentDetailView({ studentId }: { studentId: string }) 
 
             try {
                 // 1. FETCH DE DATOS PRINCIPALES (Estudiante)
-                let studentUrl = new URL(API_STUDENTS, window.location.origin);
-                studentUrl.searchParams.append("idEstudiante", studentId);
+                let studentUrl = `${API_STUDENTS}/${studentId}`;
 
                 const studentResponse = await fetch(studentUrl.toString());
+
                 if (!studentResponse.ok) {
-                    setErrorMsg("Error al obtener los datos principales del estudiante");
+                    let message = "Error al obtener los datos principales del estudiante";
+                    if (studentResponse.status === 404) {
+                        message = `Estudiante con ID ${studentId} no encontrado.`;
+                    }
+                    setErrorMsg(message);
                     return;
                 }
 
-                const studentDataList = await studentResponse.json();
-                const foundStudent = studentDataList.find(
-                    (s: StudentData) => s.idEstudiante === idToSearch
-                );
+                // Esperamos un objeto de estudiante único, no una lista
+                const foundStudent: StudentData = await studentResponse.json();
 
-                if (!foundStudent) {
-                    setErrorMsg(`Error: No se encontró un estudiante con ID: ${idToSearch}`);
+                // Verificación adicional de ID (aunque 404 del backend lo manejaría)
+                if (foundStudent.idEstudiante !== idToSearch) {
+                    setErrorMsg(`Error de consistencia: ID esperado ${idToSearch} no coincide con ID recibido.`);
                     return;
                 }
+
                 setStudentDetail(foundStudent);
 
                 // 2. FETCH DE DATOS ADICIONALES EN PARALELO (Encargado y Autorizado)
                 if (foundStudent.idPrograma !== 4) {
-                    // 2. FETCH DE DATOS ADICIONALES EN PARALELO (Encargado y Autorizado)
                     const [encargadoResult, autorizadoResult] = await Promise.allSettled([
                         fetch(`${API_LEGAL_GUARDIAN}?idEstudiante=${studentId}`),
                         fetch(`${API_AUTHORIZED_PICKPUPS}?idEstudiante=${studentId}`),
@@ -157,7 +161,7 @@ export default function StudentDetailView({ studentId }: { studentId: string }) 
     return (
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 bg-neutral-900/60 min-h-screen text-white">
             <h1 className="text-3xl font-bold text-sky-400 mb-6 border-b border-neutral-700 pb-2">
-                Detalles del Estudiante: {studentDetail.nombreCompleto} 
+                Detalles del Estudiante: {studentDetail.nombreCompleto}
             </h1>
 
             <div className="grid grid-cols-1 gap-8">
@@ -172,20 +176,34 @@ export default function StudentDetailView({ studentId }: { studentId: string }) 
                         <DetailItem label="Nacionalidad" value={studentDetail.nacionalidad} />
                         <DetailItem label="Fecha Nacimiento" value={studentDetail.fechaNacimiento} />
 
-                        {/*Ocultar Teléfono y Correo para idPrograma=3 */}
+                        {/*Ocultar Teléfono y Correo para idPrograma=2 */}
                         {!isPrograma2 && (
                             <>
                                 <DetailItem label="Teléfono" value={studentDetail.telefono} />
                                 <DetailItem label="Correo" value={studentDetail.correo} />
                             </>
                         )}
-                        
+
                         <DetailItem label="Dirección" value={studentDetail.direccion} />
-                        <DetailItem label="Grado Escolar" value={studentDetail.gradoEscolar} />
-                        <DetailItem label="Institución" value={studentDetail.institucion} />
                         <DetailItem label="Póliza Estudiantil" value={studentDetail.numeroPoliza} />
 
-                        {/*Mostrar Discapacidad para idPrograma=2 */}
+                        {/* Mostrar Grado Escolar e Institución solo si NO es idPrograma=4 */}
+                        {!isPrograma4 && (
+                            <>
+                                <DetailItem label="Grado Escolar" value={studentDetail.gradoEscolar} />
+                                <DetailItem label="Institución" value={studentDetail.institucion} />
+                            </>
+                        )}
+
+                        {/* Mostrar Lugar de Trabajo y Ocupación solo si es idPrograma=4 */}
+                        {isPrograma4 && (
+                            <>
+                                <DetailItem label="Ocupación" value={studentDetail.ocupacion} />
+                                <DetailItem label="Lugar Trabajo" value={studentDetail.lugarTrabajo} />
+                            </>
+                        )}
+
+                        {/*Mostrar Discapacidad para idPrograma=3 */}
                         {(isPrograma3 || studentDetail.discapacidad) && (
                             <DetailItem label="Discapacidad" value={studentDetail.discapacidad} />
                         )}

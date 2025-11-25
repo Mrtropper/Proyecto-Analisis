@@ -16,7 +16,6 @@ export async function POST(request: Request) {
         const lugarTrabajo = typeof data.lugarTrabajo === "string" ? data.lugarTrabajo.trim() : null;
         const ocupacion = typeof data.ocupacion === "string" ? data.ocupacion.trim() : null;
         const numeroPoliza = typeof data.numeroPoliza === "string" ? data.numeroPoliza.trim() : null;
-        const discapacidad = typeof data.discapacidad === "string" ? data.discapacidad.trim() : null;
         const detalles = typeof data.detalles === "string" ? data.detalles.trim() : null;
         const idPrograma = typeof data.idPrograma === "number" ? data.idPrograma : null;
 
@@ -37,7 +36,6 @@ export async function POST(request: Request) {
                 lugarTrabajo,
                 ocupacion,
                 numeroPoliza,
-                discapacidad,
                 detalles,
                 idPrograma,
             },

@@ -6,7 +6,7 @@ const API_URL = "/api/students";
 
 export default function RegularStudentForm() {
 
-  const [email, setEmail] = useState("");
+  const [correo, setCorreo] = useState("");
   const [nombre, setNombre] = useState("");
   const [cedula, setCedula] = useState("");
   const [genero, setGenero] = useState("");
@@ -15,9 +15,9 @@ export default function RegularStudentForm() {
   const [telefonoEstudiante, setTelefonoEstudiante] = useState("");
   const [direccion, setDireccion] = useState("");
   const [nivelEscolar, setNivelEscolar] = useState("");
-  const [institucionEducativa, setInstitucionEducativa] = useState("");
+  const [institucion, setInstitucion] = useState("");
   const [polizaEstudiantil, setPolizaEstudiantil] = useState("");
-  const [necesidadesEspeciales, setNecesidadesEspeciales] = useState("");
+  const [detalles, setDetalles] = useState("");
 
   const [encargadoNombre, setEncargadoNombre] = useState("");
   const [encargadoCedula, setEncargadoCedula] = useState("");
@@ -26,9 +26,9 @@ export default function RegularStudentForm() {
   const [encargadoOcupacion, setEncargadoOcupacion] = useState("");
   const [lugarTrabajo, setLugarTrabajo] = useState("");
 
-  const [personasAutorizadasNombre, setPersonasAutorizadasNombre] = useState("");
-  const [personasAutorizadasRelacion, setPersonasAutorizadasRelacion] = useState("");
-  const [personasAutorizadasTelefono, setPersonasAutorizadasTelefono] = useState("");
+  const [autorizadoNombre, setAutorizadoNombre] = useState("");
+  const [autorizadoRelacion, setAutorizadoRelacion] = useState("");
+  const [autorizadoTelefono, setAutorizadoTelefono] = useState("");
 
   const [msg, setMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +36,7 @@ export default function RegularStudentForm() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   function resetForm() {
-    setEmail("");
+    setCorreo("");
     setNombre("");
     setCedula("");
     setGenero("");
@@ -45,9 +45,9 @@ export default function RegularStudentForm() {
     setTelefonoEstudiante("");
     setDireccion("");
     setNivelEscolar("");
-    setInstitucionEducativa("");
+    setInstitucion("");
     setPolizaEstudiantil("");
-    setNecesidadesEspeciales("");
+    setDetalles("");
 
     setEncargadoNombre("");
     setEncargadoCedula("");
@@ -56,9 +56,9 @@ export default function RegularStudentForm() {
     setEncargadoOcupacion("");
     setLugarTrabajo("");
 
-    setPersonasAutorizadasNombre("");
-    setPersonasAutorizadasRelacion("");
-    setPersonasAutorizadasTelefono("");
+    setAutorizadoNombre("");
+    setAutorizadoRelacion("");
+    setAutorizadoTelefono("");
 
     setMsg(null);
   }
@@ -85,7 +85,7 @@ export default function RegularStudentForm() {
     if (!fechaNacimiento.trim()) { setIsLoading(false); return setMsg("La Fecha de Nacimiento es requerida"); }
     if (!direccion.trim()) { setIsLoading(false); return setMsg("La Dirección es requerida"); }
     if (!nivelEscolar.trim()) { setIsLoading(false); return setMsg("El Nivel Escolar es requerido"); }
-    if (!institucionEducativa.trim()) { setIsLoading(false); return setMsg("La Institución Educativa es requerida"); }
+    if (!institucion.trim()) { setIsLoading(false); return setMsg("La Institución Educativa es requerida"); }
     // Validacion encargado legal
     if (!encargadoNombre.trim()) { setIsLoading(false); return setMsg("El nombre del encargado legal es requerido"); }
     if (!encargadoCedula.trim()) { setIsLoading(false); return setMsg("La cédula del encargado legal es requerida"); }
@@ -94,9 +94,9 @@ export default function RegularStudentForm() {
     if (!encargadoOcupacion.trim()) { setIsLoading(false); return setMsg("La ocupación del encargado legal es requerida"); }
     if (!lugarTrabajo.trim()) { setIsLoading(false); return setMsg("El lugar de trabajo del encargado legal es requerido"); }
     // Validacion personas autorizadas
-    if (!personasAutorizadasNombre.trim()) { setIsLoading(false); return setMsg("El nombre de la persona autorizada es requerido"); }
-    if (!personasAutorizadasRelacion.trim()) { setIsLoading(false); return setMsg("La relación de la persona autorizada es requerida"); }
-    if (!personasAutorizadasTelefono.trim()) { setIsLoading(false); return setMsg("El teléfono de la persona autorizada es requerido"); }
+   if (!autorizadoNombre.trim()) { setIsLoading(false); return setMsg("El nombre de la persona autorizada es requerido"); }
+    if (!autorizadoRelacion.trim()) { setIsLoading(false); return setMsg("La relación de la persona autorizada es requerida"); }
+    if (!autorizadoTelefono.trim()) { setIsLoading(false); return setMsg("El teléfono de la persona autorizada es requerido"); }
 
     const idPrograma = 1; // ID fijo para estudiantes regulares
     const studentData = {
@@ -108,12 +108,12 @@ export default function RegularStudentForm() {
         nacionalidad: nacionalidad.trim(),
         fechaNacimiento: fechaNacimiento.trim(),
         telefono: telefonoEstudiante.trim(),
-        correo: email.trim(),
+        correo: correo.trim(),
         direccion: direccion.trim(),
         gradoEscolar: nivelEscolar.trim(),
-        institucion: institucionEducativa.trim(),
+        institucion: institucion.trim(),
         numeroPoliza: polizaEstudiantil.trim(),
-        detalles: necesidadesEspeciales.trim(),
+        detalles: detalles.trim(),
       },
 
       encargadoLegal: {
@@ -126,9 +126,9 @@ export default function RegularStudentForm() {
       },
 
       autorizadoRetiro: {
-        nombre: personasAutorizadasNombre.trim(),
-        parentesco: personasAutorizadasRelacion.trim(),
-        telefono: personasAutorizadasTelefono.trim(),
+        nombre: autorizadoNombre.trim(),
+        parentesco: autorizadoRelacion.trim(),
+        telefono: autorizadoTelefono.trim(),
       }
 
     };
@@ -231,9 +231,9 @@ export default function RegularStudentForm() {
               <label className="block text-base font-semibold text-white">Número de Teléfono (si lo tiene)</label>
               <input type="tel" placeholder="Opcional" value={telefonoEstudiante} onChange={(e) => setTelefonoEstudiante(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
-              {/* Nombre Completo */}
+              {/* Correo */}
               <label className="block text-base font-semibold text-white">Correo (si lo tiene)</label>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              <input value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Dirección del Domicilio (Usando textarea para más espacio) */}
               <label className="block text-base font-semibold text-white">Dirección del Domicilio (Provincia, Cantón, etc.)</label>
@@ -245,15 +245,15 @@ export default function RegularStudentForm() {
 
               {/* Nombre de la Institución Educativa del MEP */}
               <label className="block text-base font-semibold text-white">Nombre de la Institución Educativa (MEP)</label>
-              <input value={institucionEducativa} onChange={(e) => setInstitucionEducativa(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              <input value={institucion} onChange={(e) => setInstitucion(e.target.value)} className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Póliza Estudiantil (si la tiene) */}
               <label className="block text-base font-semibold text-white">Póliza Estudiantil (si la tiene)</label>
               <input value={polizaEstudiantil} onChange={(e) => setPolizaEstudiantil(e.target.value)} placeholder="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
-              {/* Cuidados especiales de salud */}
-              <label className="block text-base font-semibold text-white">Cuidados de Salud</label>
-              <textarea value={necesidadesEspeciales} onChange={(e) => setNecesidadesEspeciales(e.target.value)} rows={3} placeholder="Especifique si aplica" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              {/* Detalles */}
+              <label className="block text-base font-semibold text-white">Detalles</label>
+              <textarea value={detalles} onChange={(e) => setDetalles(e.target.value)} rows={3} placeholder="Especifique si aplica" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
             </div>
           </div>
 
@@ -302,16 +302,16 @@ export default function RegularStudentForm() {
               {/* Nombre */}
               <label className="block text-sm font-semibold text-white">Nombre Completo</label>
               <input
-                value={personasAutorizadasNombre}
-                onChange={(e) => setPersonasAutorizadasNombre(e.target.value)}
+                value={autorizadoNombre}
+                onChange={(e) => setAutorizadoNombre(e.target.value)}
                 className="w-full rounded border px-3 py-2 bg-neutral-800 text-white text-sm"
               />
 
               {/* Relación */}
               <label className="block text-sm font-semibold text-white">Relación con el Estudiante</label>
               <input
-                value={personasAutorizadasRelacion}
-                onChange={(e) => setPersonasAutorizadasRelacion(e.target.value)}
+                value={autorizadoRelacion}
+                onChange={(e) => setAutorizadoRelacion(e.target.value)}
                 className="w-full rounded border px-3 py-2 bg-neutral-800 text-white text-sm"
               />
 
@@ -319,8 +319,8 @@ export default function RegularStudentForm() {
               <label className="block text-sm font-semibold text-white">Número de Telefono</label>
               <input
                 type="tel"
-                value={personasAutorizadasTelefono}
-                onChange={(e) => setPersonasAutorizadasTelefono(e.target.value)}
+                value={autorizadoTelefono}
+                onChange={(e) => setAutorizadoTelefono(e.target.value)}
                 className="w-full rounded border px-3 py-2 bg-neutral-800 text-white text-sm"
               />
             </div>

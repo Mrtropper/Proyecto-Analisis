@@ -10,21 +10,6 @@ interface Student {
     status: status;
 }
 
-interface StudentDetail extends Student {
-    genero: string | null;
-    nacionalidad: string | null;
-    fechaNacimiento: string | null;
-    telefono: string | null;
-    correo: string | null;
-    direccion: string | null;
-    gradoEscolar: string | null;
-    institucion: string | null;
-    lugarTrabajo: string | null;
-    ocupacion: string | null;
-    numeroPoliza: string | null;
-    discapacidad: string | null;
-    detalles: string | null;
-}
 
 type status = "A" | "I";
 
@@ -182,7 +167,7 @@ export default function SearchForm() {
     }, [handleSearch]);
 
     const seeStudent = (studentId: number) => {
-        router.push(`/dashboard/students/searchStudents/${studentId}`);
+        router.push(`/dashboard/students/SearchStudents/${studentId}`);
     };
 
     //Recibe el objeto Student completo

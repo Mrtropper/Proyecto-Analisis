@@ -6,7 +6,7 @@ const API_URL = "/api/students-service";
 
 export default function ServiceStudentForm() {
 
-  const [email, setEmail] = useState("");
+  const [correo, setCorreo] = useState("");
   const [nombre, setNombre] = useState("");
   const [cedula, setCedula] = useState("");
   const [genero, setGenero] = useState("");
@@ -17,7 +17,7 @@ export default function ServiceStudentForm() {
   const [poliza, setPoliza] = useState("");
   const [ocupacion, setOcupacion] = useState("");
   const [lugarTrabajo, setLugarTrabajo] = useState("");
-  const [necesidadesEspeciales, setNecesidadesEspeciales] = useState("");
+  const [detalles, setDetalles] = useState("");
 
   const [msg, setMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +25,7 @@ export default function ServiceStudentForm() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   function resetForm() {
-    setEmail("");
+    setCorreo("");
     setNombre("");
     setCedula("");
     setGenero("");
@@ -36,7 +36,7 @@ export default function ServiceStudentForm() {
     setPoliza("");
     setOcupacion("");
     setLugarTrabajo("");
-    setNecesidadesEspeciales("");
+    setDetalles("");
     setMsg(null);
   }
 
@@ -55,7 +55,7 @@ export default function ServiceStudentForm() {
     // Validación mínima
     if (!nombre.trim()) return setMsg("El nombre es requerido");
     if (!cedula.trim()) return setMsg("La Cédula es requerida");
-    if (!email.trim()) return setMsg("El Email es requerido");
+    if (!correo.trim()) return setMsg("El Email es requerido");
     if (!genero.trim()) return setMsg("El Género es requerido");
     if (!nacionalidad.trim()) return setMsg("La Nacionalidad es requerida");
     if (!fechaNacimiento.trim()) return setMsg("La Fecha de Nacimiento es requerida");
@@ -65,7 +65,7 @@ export default function ServiceStudentForm() {
     const studentData = {
       cedula: cedula.trim(),
       nombreCompleto: nombre.trim(),
-      correo: email.trim(),
+      correo: correo.trim(),
       genero: genero.trim(),
       nacionalidad: nacionalidad.trim(),
       fechaNacimiento: fechaNacimiento.trim(),
@@ -74,7 +74,7 @@ export default function ServiceStudentForm() {
       numeroPoliza: poliza.trim(),
       ocupacion: ocupacion.trim(),
       lugarTrabajo: lugarTrabajo.trim(),
-      detalles: necesidadesEspeciales.trim(), // Lo mapeamos a 'detalles' en la API
+      detalles: detalles.trim(), 
       idPrograma: ID_PROGRAMA_SERVICIO,
     };
 
@@ -176,7 +176,7 @@ export default function ServiceStudentForm() {
 
               {/* Correo */}
               <label className="block text-base font-semibold text-white">Correo </label>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              <input value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Dirección del Domicilio (Usando textarea para más espacio) */}
               <label className="block text-base font-semibold text-white">Dirección del Domicilio (Provincia, Cantón, etc.)</label>
@@ -196,9 +196,9 @@ export default function ServiceStudentForm() {
               <textarea
                 value={lugarTrabajo} onChange={(e) => setLugarTrabajo(e.target.value)} rows={2} placeholder="Opcional" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
-              {/* Cuidados especiales de salud */}
-              <label className="block text-base font-semibold text-white">Cuidados de Salud</label>
-              <textarea value={necesidadesEspeciales} onChange={(e) => setNecesidadesEspeciales(e.target.value)} rows={3} placeholder="Especifique si aplica" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              {/* Detalles */}
+              <label className="block text-base font-semibold text-white">Detalles</label>
+              <textarea value={detalles} onChange={(e) => setDetalles(e.target.value)} rows={3} placeholder="Especifique si aplica" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
             </div>
           </div>
         </div>
