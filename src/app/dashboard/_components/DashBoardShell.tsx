@@ -92,7 +92,7 @@ export default function DashboardShell({
                         aria-labelledby="options-menu"
                       >
                         <Link
-                          href="/dashboard/students/searchStudents"
+                          href="/dashboard/students/SearchStudents"
                           className="block px-4 py-2 text-sm text-neutral-100 hover:bg-neutral-700"
                           role="menuitem"
                           onClick={() => setIsGestionOpen(false)}
