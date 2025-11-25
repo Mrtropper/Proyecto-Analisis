@@ -1,39 +1,49 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-interface Context {
-  params: { id: string };
+
+function normalizeEstado(estado: unknown): string {
+  if (typeof estado === "string") {
+    const e = estado.trim().toLowerCase();
+
+    if (e === "prestado") return "Prestado";
+    if (e === "disponible") return "Disponible";
+    if (e === "atrasado") return "Atrasado";
+    if (e === "mantenimiento") return "Mantenimiento";
+
+    return estado;
+  }
+
+  return String(estado);
 }
 
-// PUT: Actualizar solo el estado del inventario
+
+// PUT: Actualizar inventario
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const idInventario = params.id;
+    const { id } = await context.params;
     const data = await request.json();
-    const { estado } = data;
+    const estado = data.estado || data.Estado || data.Estatus;
 
-    if (!idInventario) {
+    // 🔒 1. Prohibir modificar inventario prestado
+    const inventarioActual = await prisma.inventario.findUnique({
+      where: { idInventario: id },
+    });
+
+    if (inventarioActual?.Estado === "Prestado") {
       return NextResponse.json(
-        { error: "Debe proporcionar un idInventario válido" },
-        { status: 400 }
+        { error: "No se puede modificar este inventario porque está prestado." },
+        { status: 403 }
       );
     }
 
-    if (!estado) {
-      return NextResponse.json(
-        { error: "Debe proporcionar un estado válido" },
-        { status: 400 }
-      );
-    }
-
+    // 🔧 2. Proceder con actualización normal
     const inventarioActualizado = await prisma.inventario.update({
-      where: { idInventario },
-      data: {
-        estado: String(estado),
-      },
+      where: { idInventario: id },
+      data: { Estado: normalizeEstado(estado) },
     });
 
     return NextResponse.json(inventarioActualizado);
@@ -46,21 +56,29 @@ export async function PUT(
   }
 }
 
-
-// DELETE: Eliminar un registro de inventario
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+// DELETE: eliminar inventario
+export async function DELETE(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const idInventario = params.id;
+    const { id } = await context.params;
 
-    if (!idInventario) {
+    // Prohibir eliminar inventario prestado
+    const inventarioActual = await prisma.inventario.findUnique({
+      where: { idInventario: id },
+    });
+
+    if (inventarioActual?.Estado === "Prestado") {
       return NextResponse.json(
-        { error: "Debe proporcionar un idInventario válido" },
-        { status: 400 }
+        { error: "No se puede eliminar este inventario porque está prestado." },
+        { status: 403 }
       );
     }
 
+    // Proceder con eliminación normal
     await prisma.inventario.delete({
-      where: { idInventario },
+      where: { idInventario: id },
     });
 
     return NextResponse.json({ message: "Inventario eliminado correctamente" });
@@ -73,15 +91,18 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   }
 }
 
-export async function GET(_req: Request, { params }: Context) {
+
+// GET: buscar inventario por ID de instrumento
+export async function GET(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const idInstrumento = Number(params.id);
+    const { id } = await context.params;
 
     const inventario = await prisma.inventario.findFirst({
-      where: { idInstrumento },
-      select: {
-        idInventario: true,
-      },
+      where: { idInstrumento: Number(id) },
+      select: { idInventario: true },
     });
 
     if (!inventario) {
@@ -100,5 +121,3 @@ export async function GET(_req: Request, { params }: Context) {
     );
   }
 }
-
-
