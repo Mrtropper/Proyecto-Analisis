@@ -1,3 +1,17 @@
+model PrestamoInstrumento {
+  idPrestamo     Int      @id @default(autoincrement())
+  idEstudiante   Int
+  idInstrumento  Int
+  idInventario   String   @db.VarChar(100)
+  fechaEntrega   DateTime?
+  Estatus        String?  @db.VarChar(20)
+
+  estudiante     Estudiante?   @relation(fields: [idEstudiante], references: [idEstudiante])
+  instrumento    Instrumento?  @relation(fields: [idInstrumento], references: [idInstrumento])
+  inventario     Inventario?   @relation(fields: [idInventario], references: [idInventario])
+
+  @@map("PrestamoInstrumento")
+}
 generator client {
   provider = "prisma-client-js"
 }
@@ -85,6 +99,9 @@ model Profesor {
   jornada        String? @db.VarChar(90)
   activo         String? @default("A") @db.VarChar(10)
 
+  horarios         Horario[]           // Relación inversa con Horario
+  profesorHorarios ProfesorHorario[]   // Relación inversa con ProfesorHorario
+
   @@map("Profesor")
 }
 
@@ -164,18 +181,27 @@ model Inventario {
   @@map("inventario")
 }
 
-model PrestamoInstrumento {
-  idPrestamo     Int       @id @default(autoincrement()) @map("idPrestamo")
-  idEstudiante   Int       @map("idEstudiante")
-  idInstrumento  Int       @map("idInstrumento")
-  idInventario   String    @db.VarChar(60)
-  fechaEntrega   DateTime? @map("fechaEntrega")
-  Estatus        String?   @db.VarChar(15)
 
-  estudiante   Estudiante  @relation(fields: [idEstudiante], references: [idEstudiante])
-  instrumento  Instrumento @relation(fields: [idInstrumento], references: [idInstrumento])
-  inventario   Inventario  @relation(fields: [idInventario], references: [idInventario])
+model Horario {
+  idHorario  Int    @id @default(autoincrement())
+  idProfesor Int
+  dia       String @db.VarChar(20)
+  horario   String @db.VarChar(50)
 
-  @@map("PrestamoInstrumento")
+  profesor  Profesor @relation(fields: [idProfesor], references: [idProfesor])
+  profesorHorarios ProfesorHorario[]
+
+  @@map("Horario")
+}
+
+model ProfesorHorario {
+  idProfesor Int
+  idHorario  Int
+
+  profesor Profesor @relation(fields: [idProfesor], references: [idProfesor])
+  horario  Horario  @relation(fields: [idHorario], references: [idHorario])
+
+  @@id([idProfesor, idHorario])
+  @@map("ProfesorHorario")
 }
 
