@@ -12,6 +12,12 @@ interface Prestamo {
   Estatus: string | null;
 }
 
+// Interfaz para los estudiantes de la API
+interface EstudianteAPI {
+  IdEstudiante: number; 
+  nombreCompleto: string | null;
+}
+
 export default function InstrumentForm() {
   const [idEstudiante, setIdEstudiante] = useState("");
   const [idInstrumento, setIdInstrumento] = useState("");
@@ -34,12 +40,10 @@ export default function InstrumentForm() {
 
   const [busqueda, setBusqueda] = useState("");
 
-  const listaEstudiantes = [
-    { id: 2, nombre: "Juan Pérez" },
-    { id: 3, nombre: "María López" },
-    { id: 4, nombre: "Carlos Rodríguez" },
-    { id: 5, nombre: "Ana Gómez" },
-  ];
+  // Lista dinámica desde la API
+  const [estudiantes, setEstudiantes] = useState<
+    { idEstudiante: number; nombreCompleto: string | null }[]
+  >([]);
 
   const [instrumentosDisponibles, setInstrumentosDisponibles] = useState<
     { idInstrumento: string; nombre: string }[]
@@ -65,7 +69,7 @@ export default function InstrumentForm() {
     }
   };
 
-  // Cargar instrumentos
+  // Cargar instrumentos y estudiantes
   useEffect(() => {
     const fetchInstrumentos = async () => {
       try {
@@ -84,6 +88,24 @@ export default function InstrumentForm() {
       }
     };
 
+    const fetchEstudiantes = async () => {
+      try {
+        const response = await fetch("/api/students");
+        if (!response.ok) throw new Error("Error al cargar estudiantes");
+
+        const data: EstudianteAPI[] = await response.json();
+
+        const formato = data.map((est) => ({
+          idEstudiante: est.IdEstudiante,
+          nombreCompleto: est.nombreCompleto ?? "",
+        }));
+
+        setEstudiantes(formato);
+      } catch (e) {
+        console.error("Error al cargar estudiantes:", e);
+      }
+    };
+
     const cargarPrestamos = async () => {
       try {
         const res = await fetch("/api/prestamoInstrumento?simple=true", {
@@ -97,6 +119,7 @@ export default function InstrumentForm() {
     };
 
     fetchInstrumentos();
+    fetchEstudiantes();
     cargarPrestamos();
   }, []);
 
@@ -118,12 +141,16 @@ export default function InstrumentForm() {
     obtenerInventarioPorInstrumento(Number(idInstrumento));
   }, [idInstrumento]);
 
-  // Filtros de búsqueda
-  const filteredEstudiantes = listaEstudiantes.filter(
-    (est) =>
-      est.id.toString().includes(searchEstudiante.toLowerCase()) ||
-      est.nombre.toLowerCase().includes(searchEstudiante.toLowerCase())
-  );
+  // Buscar estudiantes
+  const filteredEstudiantes = estudiantes.filter((est) => {
+    const id = est?.idEstudiante ? est.idEstudiante.toString() : "";
+    const nombre = est?.nombreCompleto
+      ? est.nombreCompleto.toLowerCase()
+      : "";
+    const q = searchEstudiante.toLowerCase();
+
+    return id.includes(q) || nombre.includes(q);
+  });
 
   const filteredInstrumentos = instrumentosDisponibles.filter(
     (inst) =>
@@ -146,7 +173,7 @@ export default function InstrumentForm() {
     );
   });
 
-  // Guardar / Modificar préstamo
+  //Guardar / Modificar préstamo
   const handleGuardar = async () => {
     if (!idEstudiante || !idInstrumento || !idInventario || !fechaEntrega) {
       alert("Por favor complete todos los campos antes de guardar.");
@@ -192,13 +219,12 @@ export default function InstrumentForm() {
         return;
       }
 
-      // GUARDAR
+      // GUARDAR NUEVO
       const nuevoPrestamo = {
         idEstudiante,
         idInstrumento,
         idInventario,
         fechaEntrega: fechaFormateada,
-        // Estatus no se envía, backend usa default "Prestado"
       };
 
       const response = await fetch("/api/prestamoInstrumento", {
@@ -210,7 +236,6 @@ export default function InstrumentForm() {
       if (response.ok) {
         alert("Préstamo guardado correctamente.");
 
-        // Actualizar inventario a Prestado
         await fetch(`/api/inventario/${idInventario}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -224,7 +249,6 @@ export default function InstrumentForm() {
         setEstatus("Prestado");
         await recargarPrestamos();
       } else {
-        // 👉 Aquí está el cambio importante
         const errorData: { error?: string } = await response.json();
         alert(errorData.error || "No se pudo guardar el préstamo.");
       }
@@ -236,7 +260,6 @@ export default function InstrumentForm() {
     }
   };
 
-
   // Eliminar préstamo
   const handleEliminar = async (idPrestamo: number) => {
     if (!confirm("¿Seguro que desea eliminar este préstamo?")) return;
@@ -247,16 +270,16 @@ export default function InstrumentForm() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error al eliminar préstamo:", errorText);
-        alert("No se pudo eliminar el préstamo.");
-        return;
-      }
+      const error = await response.json().catch(() => ({}));
+      alert(error.error || "No se pudo eliminar el préstamo.");
+      return;
+    }
 
       alert("Préstamo eliminado correctamente.");
       await recargarPrestamos();
     } catch (e) {
       console.error("Error al eliminar préstamo:", e);
+      alert("Error inesperado al eliminar el préstamo.");
     }
   };
 
@@ -292,12 +315,11 @@ export default function InstrumentForm() {
             Préstamo Instrumento
           </button>
         </Link>
-
       </div>
 
       {/* FORMULARIO + TABLA */}
       <div className="flex gap-6 items-start mt-6">
-        {/* Cuadro principal (FORMULARIO) */}
+        {/* FORMULARIO */}
         <div className="w-[420px]">
           <div className="p-4 border border-gray-900 rounded relative">
             <h2 className="text-xl font-semibold text-blue-400">
@@ -309,7 +331,7 @@ export default function InstrumentForm() {
                 : "Ingrese los datos correspondientes al préstamo del instrumento"}
             </p>
 
-            {/* Campo Estudiante con modal */}
+            {/* Campo Estudiante */}
             <div className="mt-4">
               <label className="block text-sm text-neutral-200 mb-1">
                 ID del estudiante
@@ -340,7 +362,7 @@ export default function InstrumentForm() {
               )}
             </div>
 
-            {/* Campo Instrumento con modal */}
+            {/* Campo Instrumento */}
             <div className="mt-4">
               <label className="block text-sm text-neutral-200 mb-1">
                 ID del instrumento
@@ -371,7 +393,7 @@ export default function InstrumentForm() {
               )}
             </div>
 
-            {/* Campo ID Inventario */}
+            {/* Campo Inventario */}
             <div className="mt-4">
               <label className="block text-sm text-neutral-200 mb-1">
                 ID de inventario
@@ -384,7 +406,7 @@ export default function InstrumentForm() {
               />
             </div>
 
-            {/* Campo Fecha de entrega */}
+            {/* Fecha */}
             <div className="mt-4">
               <label className="block text-sm text-neutral-200 mb-1">
                 Fecha de entrega
@@ -398,7 +420,7 @@ export default function InstrumentForm() {
               />
             </div>
 
-            {/* Campo Estado (solo en edición) */}
+            {/* Estado */}
             {modoEdicion && (
               <div className="mt-4">
                 <label className="block text-sm text-neutral-200 mb-1">
@@ -433,7 +455,7 @@ export default function InstrumentForm() {
               </button>
             </div>
 
-            {/* MODALES*/}
+            {/* 🔵 MODAL ESTUDIANTES */}
             {showEstudianteModal && (
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
                 <div className="bg-gray-900 border border-blue-800 rounded-lg p-6 w-96">
@@ -453,15 +475,15 @@ export default function InstrumentForm() {
                     {filteredEstudiantes.length > 0 ? (
                       filteredEstudiantes.map((est) => (
                         <li
-                          key={est.id}
+                          key={est.idEstudiante} // ← CAMBIO NECESARIO
                           className="px-3 py-2 hover:bg-gray-700 cursor-pointer"
                           onClick={() => {
-                            setIdEstudiante(String(est.id));
+                            setIdEstudiante(String(est.idEstudiante));
                             setShowEstudianteModal(false);
                             setSearchEstudiante("");
                           }}
                         >
-                          {est.id} - {est.nombre}
+                          {est.idEstudiante} - {est.nombreCompleto}
                         </li>
                       ))
                     ) : (
@@ -486,6 +508,7 @@ export default function InstrumentForm() {
               </div>
             )}
 
+            {/* 🔵 MODAL INSTRUMENTO */}
             {showInstrumentoModal && (
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
                 <div className="bg-gray-900 border border-blue-800 rounded-lg p-6 w-96">
