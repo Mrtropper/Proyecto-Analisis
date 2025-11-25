@@ -1,6 +1,22 @@
-
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+
+
+function normalizeEstado(estado: unknown): string {
+  if (typeof estado === "string") {
+    const e = estado.trim().toLowerCase();
+
+    if (e === "prestado") return "Prestado";
+    if (e === "disponible") return "Disponible";
+    if (e === "atrasado") return "Atrasado";
+    if (e === "mantenimiento") return "Mantenimiento";
+
+    return estado;
+  }
+
+  return String(estado);
+}
+
 
 // GET: Lista del inventario
 export async function GET() {
@@ -9,7 +25,7 @@ export async function GET() {
       select: {
         idInventario: true,
         idInstrumento: true,
-        estado: true,   
+        Estado: true,
       },
       orderBy: {
         idInventario: "asc",
@@ -26,15 +42,13 @@ export async function GET() {
   }
 }
 
-
-
+// POST: Crear inventario
 export async function POST(request: Request) {
   try {
     const data = await request.json();
     const { idInventario, idInstrumento, estado } = data;
 
-    // Validación mínima: el ID es el único obligatorio
-    if (!idInventario ) {
+    if (!idInventario) {
       return NextResponse.json(
         { error: "El campo 'idInventario' es obligatorio." },
         { status: 400 }
@@ -45,7 +59,7 @@ export async function POST(request: Request) {
       data: {
         idInventario: String(idInventario),
         idInstrumento: Number(idInstrumento),
-        estado: estado || "Disponible", //valor predeterminado
+        Estado: normalizeEstado(estado || "Disponible"),
       },
     });
 
@@ -53,9 +67,8 @@ export async function POST(request: Request) {
   } catch (e) {
     console.error("Error al crear inventario:", e);
     return NextResponse.json(
-      { error: "Error al crear inventario"},
+      { error: "Error al crear inventario" },
       { status: 500 }
     );
   }
 }
-
