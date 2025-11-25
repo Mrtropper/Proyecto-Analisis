@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
-import "./globals.css"; // si usas Tailwind
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MyApp",
-  description: "Demo",
+  title: "SINEM",
+  description: "Sistema Nacional de Educación Musical",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className="min-h-dvh bg-neutral-950">{children}</body>
+      <body className="min-h-dvh antialiased">{children}</body>
     </html>
   );
 }

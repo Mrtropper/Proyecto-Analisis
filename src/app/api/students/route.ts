@@ -1,73 +1,105 @@
+//src/app/api/students/route.ts
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-/**
- * API stub para estudiantes.
- * Almacenamiento en memoria (provisional) porque la DB aún no está lista.
- * Soporta GET (listar), POST (crear), DELETE (eliminar por id en body).
- */
-
-type Student = { id: number; nombre: string; edad: number; instrumento: string; profesor: string };
-
-// Datos en memoria: iniciamos con algunos ejemplos
-let students: Student[] = [
-  { id: 1, nombre: 'Ana Pérez', edad: 12, instrumento: 'Piano', profesor: 'Mario' },
-  { id: 2, nombre: 'Luis Gómez', edad: 15, instrumento: 'Guitarra', profesor: 'Laura' },
-];
-
-let nextId = students.length ? Math.max(...students.map(s => s.id)) + 1 : 1;
-
-export async function GET() {
-  try {
-    return NextResponse.json(students);
-  } catch (e) {
-    console.error('GET /api/students error', e);
-    return NextResponse.json({ error: 'Error al obtener estudiantes' }, { status: 500 });
-  }
-}
-
+//POST: Crear un nuevo estudiante, encargado legal y autorizado a recoger
 export async function POST(request: Request) {
-  try {
-    const data = await request.json();
-    const nombre = typeof data.nombre === 'string' ? data.nombre.trim() : '';
-    const edad = typeof data.edad === 'number' ? data.edad : Number(data.edad);
-    const instrumento = typeof data.instrumento === 'string' ? data.instrumento.trim() : '';
-    const profesor = typeof data.profesor === 'string' ? data.profesor.trim() : '';
+    try {
+        const data = await request.json();
+        const { estudiante, encargadoLegal, autorizadoRetiro } = data;
+        if (!estudiante || !encargadoLegal || !autorizadoRetiro) {
+            return NextResponse.json({ error: "Faltan datos requeridos (estudiante, encargado legal o autorizado a recoger)" }, { status: 400 });
+        }
 
-    if (!nombre) return NextResponse.json({ error: 'El nombre es requerido' }, { status: 400 });
-    if (!Number.isFinite(Number(edad))) return NextResponse.json({ error: 'La edad es requerida' }, { status: 400 });
-    if (!instrumento) return NextResponse.json({ error: 'El instrumento es requerido' }, { status: 400 });
-    if (!profesor) return NextResponse.json({ error: 'El profesor es requerido' }, { status: 400 });
+        if (estudiante.idPrograma) estudiante.idPrograma = Number(estudiante.idPrograma);
+        if (estudiante.fechaNacimiento) estudiante.fechaNacimiento = new Date(estudiante.fechaNacimiento);
 
-    // Verificación provisional de rol ADMIN via header 'x-user-roles'
-    const rolesHeader = request.headers.get('x-user-roles') || '';
-    const allowed = rolesHeader.split(',').map(r => r.trim().toUpperCase()).includes('ADMIN');
-    if (!allowed) return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
+        // Estudiante (Cédula y Nombre Completo)
+        if (!estudiante.cedula || !estudiante.nombreCompleto) {
+            return NextResponse.json({ error: "Estudiante: Cédula y Nombre Completo son requeridos." }, { status: 400 });
+        }
 
-    const nuevo: Student = { id: nextId++, nombre, edad: Number(edad), instrumento, profesor };
-    students.push(nuevo);
-    return NextResponse.json(nuevo);
-  } catch (e) {
-    console.error('POST /api/students error', e);
-    return NextResponse.json({ error: 'Error al crear estudiante' }, { status: 500 });
-  }
+        // Encargado Legal (Cédula y Nombre)
+        if (!encargadoLegal.cedula || !encargadoLegal.nombre) {
+            return NextResponse.json({ error: "Encargado Legal: Cédula y Nombre son requeridos." }, { status: 400 });
+        }
+
+        // Autorizado a Recoger (Nombre)
+        if (!autorizadoRetiro.nombre) {
+            return NextResponse.json({ error: "Autorizado a Retiro: Nombre es requerido." }, { status: 400 });
+        }
+
+        //Escritura anidada en la base de datos
+        const nuevoRegistroCompleto = await prisma.estudiante.create({
+            data: {
+                ...estudiante,
+                encargadoLegal: {
+                    create: { ...encargadoLegal }
+                },
+                autorizadoRetiro: {
+                    create: { ...autorizadoRetiro }
+                }
+            }
+        });
+        return NextResponse.json(nuevoRegistroCompleto, { status: 201 });
+    } catch (e) {
+        console.error("Error en Transacción de Creación Completa:", e);
+
+        // Manejo de error de unicidad (ej: cédula duplicada P2002)
+        if (e && typeof e === 'object' && 'code' in e && e.code === 'P2002') {
+            return NextResponse.json(
+                { error: "Conflicto de datos: Una cédula (Estudiante/Encargado/Autorizado) ya existe." },
+                { status: 409 } // Conflict
+            );
+        }
+
+        // Error general
+        return NextResponse.json(
+            { error: "Error interno del servidor al crear el registro completo." },
+            { status: 500 }
+        );
+    }
 }
 
-export async function DELETE(request: Request) {
-  try {
-    const data = await request.json();
-    const id = Number(data?.id);
-    if (!Number.isFinite(id)) return NextResponse.json({ error: 'ID inválido' }, { status: 400 });
-    // Verificación provisional de rol ADMIN via header 'x-user-roles'
-    const rolesHeader = request.headers.get('x-user-roles') || '';
-    const allowed = rolesHeader.split(',').map(r => r.trim().toUpperCase()).includes('ADMIN');
-    if (!allowed) return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
 
-    const before = students.length;
-    students = students.filter(s => s.id !== id);
-    if (students.length === before) return NextResponse.json({ error: 'Estudiante no encontrado' }, { status: 404 });
-    return NextResponse.json({ success: true });
-  } catch (e) {
-    console.error('DELETE /api/students error', e);
-    return NextResponse.json({ error: 'Error al eliminar estudiante' }, { status: 500 });
-  }
+// GET: Listar todos los estudiantes
+export async function GET(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const nombreCompleto = searchParams.get('nombreCompleto');
+        const cedula = searchParams.get('cedula');
+
+        const whereClause: any = {};
+
+        if (nombreCompleto) {
+            whereClause.nombreCompleto = {
+                contains: nombreCompleto,
+            }
+        } else if (cedula){
+            whereClause.cedula = cedula;
+        }
+
+        const estudiante = await prisma.estudiante.findMany({
+            where: whereClause,
+            select: {
+                idEstudiante: true,
+                nombreCompleto: true,
+                cedula: true,
+                status: true,
+            },
+        });
+
+        return NextResponse.json(estudiante);
+    } catch (error) {
+        console.error("Error al listar estudiante:", error);
+        return NextResponse.json(
+            { error: "Error al listar estudiante" },
+            { status: 500 }
+        );
+    }
 }
+
+
+
+
+

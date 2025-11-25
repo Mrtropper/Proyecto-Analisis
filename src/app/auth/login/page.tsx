@@ -1,24 +1,66 @@
-import LoginForm from "../../components/auth/LoginForm";
+import Image from "next/image";
 import Link from "next/link";
-import RegisteredBannerOnce from "../../components/RegisterBanner";
+import LoginForm from "../../components/auth/LoginForm";
 
 export default function LoginPage() {
   return (
-    <main className="min-h-dvh grid place-items-center bg-neutral-950 px-6 py-10">
-      <div className="w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6 shadow-xl">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-white">Iniciar sesión</h1>
-          <p className="mt-1 text-sm text-neutral-300">
-            Ingresa tus credenciales para continuar.
-          </p>
+    <div className="relative min-h-screen flex flex-col">
+      {/* HEADER */}
+      <header className="fixed top-0 inset-x-0 z-50 bg-white/95 border-b">
+        <div className="mx-auto max-w-7xl h-16 flex items-center justify-between px-4">
+          <div className="flex items-center">
+            <div className="h-12 w-auto">
+              <Image
+                src="/logo.png"
+                alt="SINEM"
+                width={300}
+                height={100}
+                className="h-full w-auto object-contain"
+                priority
+              />
+            </div>
+          </div>
+
+          <Link
+            href="/"
+            className="rounded-lg bg-neutral-900 px-4 py-2 text-white text-sm font-medium hover:bg-neutral-800 transition"
+          >
+            Salir
+          </Link>
         </div>
+      </header>
 
-        {/* Banner que se muestra una sola vez y limpia el query */}
-        <RegisteredBannerOnce />
+      {/* CONTENIDO PRINCIPAL */}
+      <section className="relative flex-grow flex items-center justify-center pt-20 pb-28 overflow-hidden">
+        {/* Fondo difuminado */}
+        <Image
+          src="/image-bg.png"
+          alt="Fondo musical"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover blur-[6px] scale-110 opacity-50 z-0"
+          quality={100}
+          aria-hidden
+        />
 
-        <LoginForm />
+        {/* Contenedor del formulario */}
+        <div className="relative z-10 w-full max-w-md rounded-2xl bg-white/95 p-6 shadow-xl">
+          <LoginForm />
+        </div>
+      </section>
 
-      </div>
-    </main>
+      {/* FOOTER */}
+      <footer className="fixed bottom-0 inset-x-0 z-50 bg-white/95 border-t flex justify-center items-center py-2">
+        <Image
+          src="/footer.png"
+          alt="SINEM"
+          width={500}
+          height={150}
+          className="object-contain"
+          priority
+        />
+      </footer>
+    </div>
   );
 }

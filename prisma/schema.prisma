@@ -8,24 +8,22 @@ datasource db {
 }
 
 model User {
-  id       Int     @id @default(autoincrement()) @map("UserId")
-  username String? @map("Username") @db.VarChar(50)
-  email    String? @map("Email") @db.VarChar(255)
-  password String? @map("Password") @db.VarChar(255)
-  status   String? @default("A") @map("Status") @db.VarChar(5)
-
+  id       Int          @id @default(autoincrement()) @map("UserId")
+  username String?      @map("Username") @db.VarChar(50)
+  email    String?      @map("Email") @db.VarChar(255)
+  password String?      @map("Password") @db.VarChar(255)
+  status   String?      @default("A") @map("Status") @db.VarChar(5)
   roles    RolUsuario[]
 
   @@map("User")
 }
 
 model Rol {
-  id        Int      @id @default(autoincrement()) @map("RolId")
-  nombre    String   @map("RolNombre") @db.VarChar(50)
-  descripcion String? @map("descripcion") @db.VarChar(255)
-  usuarios  RolUsuario[]
-
+  id              Int               @id @default(autoincrement()) @map("RolId")
+  nombre          String            @map("RolNombre") @db.VarChar(100)
+  descripcion     String            @map("descripcion") @db.VarChar(100)
   permisosModulos PermisosModulos[]
+  usuarios        RolUsuario[]
 
   @@map("Rol")
 }
@@ -33,11 +31,11 @@ model Rol {
 model RolUsuario {
   id_usuario Int  @map("UserId")
   id_rol     Int  @map("RolId")
-
-  user User @relation(fields: [id_usuario], references: [id])
-  rol  Rol  @relation(fields: [id_rol], references: [id])
+  user       User @relation(fields: [id_usuario], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "RolUsuario_ibfk_1")
+  rol        Rol  @relation(fields: [id_rol], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "RolUsuario_ibfk_2")
 
   @@id([id_usuario, id_rol])
+  @@index([id_rol], map: "RolId")
   @@map("RolUsuario")
 }
 
@@ -48,32 +46,136 @@ model Bitacora {
 }
 
 model Modulos {
-  id        Int     @id @default(autoincrement()) @map("id")
-  nombre    String  @db.VarChar(255)
-  descripcion String? @db.VarChar(255)
+  id              Int               @id @default(autoincrement()) @map("id")
+  nombre          String            @db.VarChar(100)
+  descripcion     String?           @db.VarChar(255)
   permisosModulos PermisosModulos[]
 
   @@map("Modulos")
 }
 
 model Permisos {
-  id        Int     @id @default(autoincrement()) @map("id")
-  nombre    String  @db.VarChar(255)
-  descripcion String? @db.VarChar(255)
+  id              Int               @id @default(autoincrement()) @map("id")
+  nombre          String            @db.VarChar(50)
+  descripcion     String?           @db.VarChar(255)
   permisosModulos PermisosModulos[]
 
   @@map("Permisos")
 }
 
 model PermisosModulos {
-  rolId     Int     @map("rolId")
-  moduloId  Int     @map("moduloId")
-  permisoId Int     @map("permisoId")
-
-  rol    Rol      @relation(fields: [rolId], references: [id])
-  modulo Modulos  @relation(fields: [moduloId], references: [id])
-  permiso Permisos @relation(fields: [permisoId], references: [id])
+  rolId     Int      @map("rolId")
+  moduloId  Int      @map("moduloId")
+  permisoId Int      @map("permisoId")
+  rol       Rol      @relation(fields: [rolId], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "PermisosModulos_ibfk_1")
+  modulo    Modulos  @relation(fields: [moduloId], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "PermisosModulos_ibfk_2")
+  permiso   Permisos @relation(fields: [permisoId], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "PermisosModulos_ibfk_3")
 
   @@id([rolId, moduloId, permisoId])
+  @@index([moduloId], map: "moduloId")
+  @@index([permisoId], map: "permisoId")
   @@map("PermisosModulos")
 }
+
+model Profesor {
+  idProfesor     Int     @id @default(autoincrement())
+  nombreCompleto String  @db.VarChar(80)
+  correo         String? @db.VarChar(120)
+  telefono       String? @db.VarChar(30)
+  jornada        String? @db.VarChar(90)
+  activo         String? @default("A") @db.VarChar(10)
+
+  @@map("Profesor")
+}
+
+model Estudiante{
+  idEstudiante    Int       @id @default(autoincrement()) @map("IdEstudiante")
+  cedula          String    @unique @db.VarChar(25)
+  idPrograma      Int       @map("IdPrograma")
+  nombreCompleto  String?   @db.VarChar(80)
+  genero          String?   @db.VarChar(20)
+  nacionalidad    String?   @db.VarChar(60)
+  fechaNacimiento DateTime? @db.Date
+  telefono        String?   @db.VarChar(30)
+  correo          String?   @db.VarChar(120)
+  direccion       String?   @db.VarChar(255)
+  gradoEscolar    String?   @map("GradoEscolar") @db.VarChar(60)
+  institucion     String?   @db.VarChar(120)
+  lugarTrabajo    String?   @map("LugarTrabajo") @db.VarChar(120)
+  ocupacion       String?   @map("Ocupacion") @db.VarChar(80)
+  numeroPoliza    String?   @db.VarChar(60)
+  discapacidad    String?   @default("E") @db.VarChar(5)
+  detalles        String?   @map("Detalles") @db.VarChar(255)
+  status          String?   @map("Status") @default("A") @db.VarChar(5)
+
+  encargadoLegal    EncargadoLegal?
+  autorizadoRetiro  AutorizadoRetiro[]
+  prestamos         PrestamoInstrumento[]  // relación con préstamos de instrumentos
+
+  @@map("Estudiante")
+}
+
+model EncargadoLegal{
+  idEncargado   Int      @id @default(autoincrement())
+  idEstudiante  Int      @unique
+  nombre        String   @db.VarChar(80)
+  cedula        String?  @db.VarChar(25)
+  telefono      String?  @db.VarChar(30)
+  correo        String?  @db.VarChar(120)
+  lugarTrabajo  String?  @db.VarChar(120)
+  ocupacion     String?  @db.VarChar(80)
+
+  estudiante Estudiante @relation(fields:[idEstudiante], references: [idEstudiante])
+
+  @@map("EncargadoLegal")
+}
+
+model AutorizadoRetiro{
+  idAutorizado  Int      @id @default(autoincrement())
+  idEstudiante  Int
+  nombre        String   @db.VarChar(120)
+  parentesco    String?  @db.VarChar(60)
+  telefono      String?  @db.VarChar(30)
+
+  estudiante Estudiante @relation(fields:[idEstudiante], references: [idEstudiante])
+
+  @@map("AutorizadoRetiro")
+}
+
+model Instrumento {
+  idInstrumento Int    @id @map("idInstrumento")
+  nombre        String @db.VarChar(100)
+  familia       String @db.VarChar(100)
+
+  inventarios Inventario[]
+  prestamos   PrestamoInstrumento[]
+
+  @@map("Instrumento")
+}
+
+model Inventario {
+  idInventario  String         @id @db.VarChar(100)
+  idInstrumento Int
+  estado        String?        @db.VarChar(20)
+
+  instrumento Instrumento @relation(fields: [idInstrumento], references: [idInstrumento])
+  prestamos   PrestamoInstrumento[]
+
+  @@map("inventario")
+}
+
+model PrestamoInstrumento {
+  idPrestamo     Int       @id @default(autoincrement()) @map("idPrestamo")
+  idEstudiante   Int       @map("idEstudiante")
+  idInstrumento  Int       @map("idInstrumento")
+  idInventario   String    @db.VarChar(60)
+  fechaEntrega   DateTime? @map("fechaEntrega")
+  Estatus        String?   @db.VarChar(15)
+
+  estudiante   Estudiante  @relation(fields: [idEstudiante], references: [idEstudiante])
+  instrumento  Instrumento @relation(fields: [idInstrumento], references: [idInstrumento])
+  inventario   Inventario  @relation(fields: [idInventario], references: [idInventario])
+
+  @@map("PrestamoInstrumento")
+}
+
