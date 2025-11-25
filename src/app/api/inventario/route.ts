@@ -25,7 +25,7 @@ export async function GET() {
       select: {
         idInventario: true,
         idInstrumento: true,
-        Estado: true,
+        estado: true,
       },
       orderBy: {
         idInventario: "asc",
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
       data: {
         idInventario: String(idInventario),
         idInstrumento: Number(idInstrumento),
-        Estado: normalizeEstado(estado || "Disponible"),
+        estado: normalizeEstado(estado || "Disponible"),
       },
     });
 
