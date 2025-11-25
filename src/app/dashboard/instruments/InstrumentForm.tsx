@@ -119,19 +119,25 @@ export default function InstrumentForm() {
   };
 
   // Eliminar
-  const handleEliminar = async (id: number) => {
+  const handleEliminar = async (id: number) =>
+  {
     const confirmar = confirm("¿Seguro que desea eliminar este instrumento?");
     if (!confirmar) return;
 
-    try {
-      const response = await fetch(`/api/instrumento/${id}`, {
+    try 
+    {
+      const response = await fetch(`/api/instrumento/${id}`, 
+      {
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        alert("Error al eliminar instrumento.");
+      if (!response.ok) 
+      {
+        const error = await response.json().catch(() => ({}));
+        alert(error.error || "No se pudo eliminar el instrumento.");
         return;
       }
+
 
       alert("Instrumento eliminado correctamente.");
       await cargarInstrumentos();
