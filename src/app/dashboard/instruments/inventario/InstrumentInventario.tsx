@@ -87,17 +87,25 @@ export default function InventarioForm() {
 
       // EDITAR
       if (modoEdicion) {
-        const response = await fetch(`/api/inventario/${idInventario}`, {
+        const response = await fetch(`/api/inventario/${idInventario}`,
+        {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ Estado: estado }),
+          body: JSON.stringify({ estado: estado }),
         });
 
-        if (!response.ok) {
+        if (!response.ok) 
+        {
           const error = await response.json().catch(() => ({}));
           alert(`Error al modificar: ${error.error || "Error desconocido"}`);
+
+          setModoEdicion(false);
+          setIdInventario("");
+          setIdInstrumento("");
+          cargarInventario();
           return;
         }
+
 
         alert("Inventario actualizado correctamente");
 
