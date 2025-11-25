@@ -57,14 +57,50 @@ export async function PUT(request: Request, context: Context) {
   }
 }
 
-// DELETE: Eliminar un instrumento
-export async function DELETE(_request: Request, context: Context) {
+// DELETE instrumento
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const id = Number(context?.params?.id);
-    await prisma.instrumento.delete({ where: { idInstrumento: id } });
+    const id = params.id;
 
-    return NextResponse.json({ message: "Instrumento eliminado correctamente" });
+    //Buscar inventarios asociados
+    const inventarios = await prisma.inventario.findMany({
+      where: { idInstrumento: Number(id) },
+    });
+
+    //Si existe inventario asociado
+    if (inventarios.length > 0) {
+      // 3. Verificar si alguno está prestado o atrasado
+      const tienePrestados = inventarios.some(
+        (inv) => inv.Estado === "Prestado" || inv.Estado === "Atrasado"
+      );
+
+      if (tienePrestados) {
+        return NextResponse.json(
+          {
+            error:
+              "No se puede eliminar el instrumento porque esta prestado.",
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Eliminación normal
+    await prisma.instrumento.delete({
+      where: { idInstrumento: Number(id) },
+    });
+
+    return NextResponse.json({
+      message: "Instrumento eliminado correctamente",
+    });
   } catch (e) {
-    return NextResponse.json({ error: "Error al eliminar instrumento", e }, { status: 500 });
+    console.error("Error al eliminar instrumento:", e);
+    return NextResponse.json(
+      { error: "Error al eliminar instrumento" },
+      { status: 500 }
+    );
   }
 }
