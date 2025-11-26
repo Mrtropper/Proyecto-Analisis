@@ -28,22 +28,22 @@ export async function PUT(
     const data = await request.json();
     const estado = data.estado || data.Estado || data.Estatus;
 
-    // 🔒 1. Prohibir modificar inventario prestado
+    // Prohibir modificar inventario prestado
     const inventarioActual = await prisma.inventario.findUnique({
       where: { idInventario: id },
     });
 
-    if (inventarioActual?.Estado === "Prestado") {
+    if (inventarioActual?.estado === "Prestado") {
       return NextResponse.json(
         { error: "No se puede modificar este inventario porque está prestado." },
         { status: 403 }
       );
     }
 
-    // 🔧 2. Proceder con actualización normal
+    // Proceder con actualización normal
     const inventarioActualizado = await prisma.inventario.update({
       where: { idInventario: id },
-      data: { Estado: normalizeEstado(estado) },
+      data: { estado: normalizeEstado(estado) },
     });
 
     return NextResponse.json(inventarioActualizado);
@@ -69,7 +69,7 @@ export async function DELETE(
       where: { idInventario: id },
     });
 
-    if (inventarioActual?.Estado === "Prestado") {
+    if (inventarioActual?.estado === "Prestado") {
       return NextResponse.json(
         { error: "No se puede eliminar este inventario porque está prestado." },
         { status: 403 }
