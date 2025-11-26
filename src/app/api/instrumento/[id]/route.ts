@@ -8,65 +8,6 @@ interface Context {
   };
 }
 
-// GET: Buscar instrumentos por id o nombre
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-
-    const id = searchParams.get("id");
-    const nombre = searchParams.get("nombre");
-
-    //Buscar por ID
-    if (id) {
-      const instrumento = await prisma.instrumento.findUnique({
-        where: { idInstrumento: Number(id) },
-        select: {
-          idInstrumento: true,
-          nombre: true,
-        },
-      });
-
-      if (!instrumento) {
-        return NextResponse.json(
-          { error: "Instrumento no encontrado" },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json(instrumento);
-    }
-
-    // Buscar por nombre
-    if (nombre) {
-      const instrumentos = await prisma.instrumento.findMany({
-        where: {
-          OR: [
-            { nombre: { contains: nombre } },
-            { nombre: { contains: nombre.toLowerCase() } },
-            { nombre: { contains: nombre.toUpperCase() } },
-          ],
-        },
-        select: {
-          idInstrumento: true,
-          nombre: true,
-        },
-      });
-
-      return NextResponse.json(instrumentos);
-    }
-
-    return NextResponse.json([]);
-
-  } catch (error) {
-    console.error("Error en búsqueda de instrumento:", error);
-    return NextResponse.json(
-      { error: "Error al buscar instrumento" },
-      { status: 500 }
-    );
-  }
-}
-
-
 
 // PUT: Editar un instrumento
 export async function PUT(request: Request, context: Context) {

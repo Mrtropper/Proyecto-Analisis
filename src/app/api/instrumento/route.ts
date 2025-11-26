@@ -4,26 +4,43 @@ import { prisma } from "@/lib/prisma";
 import type { Instrumento } from "@/types/Instrumento";
 
 
-// GET: Listar todos los instrumentos
-export async function GET() {
+// GET: Buscar instrumentos por id o nombre
+export async function GET(request: Request) {
   try {
-    const instrumentos = await prisma.instrumento.findMany({
-      select: {
-        idInstrumento: true,
-        nombre: true,
-        familia: true
-      },
-    });
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    const nombre = searchParams.get("nombre");
 
-    return NextResponse.json(instrumentos);
+    // Buscar por ID
+    if (id) {
+      const inst = await prisma.instrumento.findUnique({
+        where: { idInstrumento: Number(id) },
+      });
+      return NextResponse.json(inst ? [inst] : []);
+    }
+
+    // Buscar por nombre
+    if (nombre) {
+      const inst = await prisma.instrumento.findMany({
+        where: {
+          nombre: {
+            contains: nombre
+          }
+        },
+      });
+      return NextResponse.json(inst);
+    }
+
+    // Sin filtros → devolver todo
+    const all = await prisma.instrumento.findMany();
+    return NextResponse.json(all);
+
   } catch (error) {
-    console.error("Error al listar instrumentos:", error);
-    return NextResponse.json(
-      { error: "Error al listar instrumentos" },
-      { status: 500 }
-    );
+    console.error(error);
+    return NextResponse.json({ error: "Error en GET instrumento" }, { status: 500 });
   }
 }
+
 
 // POST: Crear un nuevo instrumento
 export async function POST(request: Request) {
