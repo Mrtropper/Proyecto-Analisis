@@ -26,14 +26,29 @@ export default function ProfesoresPage() {
   const [editId, setEditId] = useState<number | null>(null);
 
   const fetchProfesores = async () => {
-    try {
-      const res = await fetch("/api/profesores");
-      const data = await res.json();
-      setProfesores(data);
-    } catch {
-      setError("No se pudo obtener la lista de profesores");
+  try {
+    const res = await fetch("/api/profesores");
+    
+    if (!res.ok) {  
+      throw new Error('Error ' + res.status + ': ' + res.statusText);
     }
-  };
+    
+    const data = await res.json();
+    
+    // Validar que data sea un array
+    if (Array.isArray(data)) {
+      setProfesores(data);
+    } else {
+      console.error("La API no retornó un array:", data);
+      setProfesores([]);
+      setError("Formato de datos incorrecto");
+    }
+  } catch (error) {
+    console.error("Error fetching profesores:", error);
+    setError("No se pudo obtener la lista de profesores");
+    setProfesores([]);
+  }
+};
 
   useEffect(() => {
     fetchProfesores();

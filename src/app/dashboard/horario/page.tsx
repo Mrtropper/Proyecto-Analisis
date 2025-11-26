@@ -1,20 +1,16 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import DashboardShell from "../_components/DashBoardShell";
 
 type Horario = {
   idHorario: number;
-  idProfesor: number;
   dia: string;
   horario: string;
 };
 
-
-import DashboardShell from "../_components/DashBoardShell";
-
 export default function HorarioPage() {
-    const [editId, setEditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState({
-    idProfesor: "",
     dia: "",
     horario: "",
   });
@@ -29,73 +25,74 @@ export default function HorarioPage() {
     try {
       const res = await fetch("/api/horario");
       const data = await res.json();
-      setHorarios(data);
+      // Asegurar que data sea un array
+      setHorarios(Array.isArray(data) ? data : []);
     } catch {
       setError("No se pudo obtener la lista de horarios");
+      setHorarios([]); // En caso de error, establecer array vacío
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchHorarios();
   }, []);
 
-  const filteredHorarios = horarios.filter(h =>
+  // Asegurar que horarios sea siempre un array antes de usar filter
+  const filteredHorarios = Array.isArray(horarios) ? horarios.filter(h =>
     h.idHorario?.toString().includes(search) ||
-    h.idProfesor?.toString().includes(search) ||
     h.dia?.toLowerCase().includes(search.toLowerCase()) ||
     h.horario?.toLowerCase().includes(search.toLowerCase())
-  );
+  ) : [];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setSuccess("");
-    setError("");
-    try {
-      if (editId === null) {
-        // Crear nuevo horario
-        const res = await fetch("/api/horario", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            idProfesor: Number(form.idProfesor),
-            dia: form.dia,
-            horario: form.horario,
-          }),
-        });
-        if (!res.ok) throw new Error("No se pudo registrar el horario");
-        setSuccess("Horario registrado correctamente");
-      } else {
-        // Editar horario existente
-        const res = await fetch(`/api/horario/${editId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            idProfesor: Number(form.idProfesor),
-            dia: form.dia,
-            horario: form.horario,
-          }),
-        });
-        if (!res.ok) throw new Error("No se pudo editar el horario");
-        setSuccess("Horario editado correctamente");
-        setEditId(null);
-      }
-      setForm({ idProfesor: "", dia: "", horario: "" });
-      fetchHorarios();
-    } catch {
-      setError(editId === null ? "No se pudo registrar el horario" : "No se pudo editar el horario");
-    } finally {
-      setLoading(false);
+  e.preventDefault();
+  setLoading(true);
+  setSuccess("");
+  setError("");
+  try {
+    if (editId === null) {
+      // Crear nuevo horario - SIN idProfesor
+      const res = await fetch("/api/horario", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dia: form.dia,
+          horario: form.horario,
+          // idProfesor eliminado
+        }),
+      });
+      if (!res.ok) throw new Error("No se pudo registrar el horario");
+      setSuccess("Horario registrado correctamente");
+    } else {
+      // Editar horario existente - SIN idProfesor
+      const res = await fetch(`/api/horario/${editId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dia: form.dia,
+          horario: form.horario,
+          // idProfesor eliminado
+        }),
+      });
+      if (!res.ok) throw new Error("No se pudo editar el horario");
+      setSuccess("Horario editado correctamente");
+      setEditId(null);
     }
-  };
+    setForm({ dia: "", horario: "" });
+    fetchHorarios();
+  } catch {
+    setError(editId === null ? "No se pudo registrar el horario" : "No se pudo editar el horario");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleEdit = (h: Horario) => {
     setForm({
-      idProfesor: h.idProfesor.toString(),
       dia: h.dia,
       horario: h.horario,
     });
@@ -130,19 +127,6 @@ export default function HorarioPage() {
           <h2 className="text-2xl font-bold mb-4">{editId === null ? "Agregar Horario" : "Editar Horario"}</h2>
           <p className="mb-4 text-neutral-400">Ingrese los datos del horario</p>
           <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="idProfesor" className="block mb-1 font-medium">ID Profesor</label>
-              <input
-                id="idProfesor"
-                name="idProfesor"
-                type="text"
-                placeholder="Ej: 1"
-                className="w-full rounded bg-neutral-800 border border-neutral-700 px-4 py-2 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-sky-600"
-                required
-                value={form.idProfesor}
-                onChange={handleChange}
-              />
-            </div>
             <div>
               <label htmlFor="dia" className="block mb-1 font-medium">Día</label>
               <input
@@ -180,7 +164,7 @@ export default function HorarioPage() {
               <button
                 type="button"
                 className="mt-2 w-full bg-neutral-700 hover:bg-neutral-600 text-white font-semibold py-2 rounded transition-colors"
-                onClick={() => { setEditId(null); setForm({ idProfesor: "", dia: "", horario: "" }); setSuccess(""); setError(""); }}
+                onClick={() => { setEditId(null); setForm({ dia: "", horario: "" }); setSuccess(""); setError(""); }}
               >
                 Cancelar edición
               </button>
@@ -195,7 +179,7 @@ export default function HorarioPage() {
           <h2 className="text-2xl font-bold mb-4">Lista de Horarios</h2>
           <input
             type="text"
-            placeholder="🔍 Buscar por ID, profesor, día u horario..."
+            placeholder="🔍 Buscar por ID, día u horario..."
             className="mb-4 w-full rounded bg-neutral-800 border border-neutral-700 px-4 py-2 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-sky-600"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -205,7 +189,6 @@ export default function HorarioPage() {
               <thead>
                 <tr className="bg-neutral-800">
                   <th className="px-3 py-2 rounded-tl-lg">ID</th>
-                  <th className="px-3 py-2">ID Profesor</th>
                   <th className="px-3 py-2">Día</th>
                   <th className="px-3 py-2">Horario</th>
                   <th className="px-3 py-2">Acciones</th>
@@ -214,13 +197,14 @@ export default function HorarioPage() {
               <tbody>
                 {filteredHorarios.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="text-center py-4 text-neutral-400">No hay horarios registrados.</td>
+                    <td colSpan={4} className="text-center py-4 text-neutral-400">
+                      {Array.isArray(horarios) && horarios.length === 0 ? "No hay horarios registrados." : "Cargando..."}
+                    </td>
                   </tr>
                 ) : (
                   filteredHorarios.map(h => (
                     <tr key={h.idHorario} className="bg-neutral-800 hover:bg-neutral-700">
                       <td className="px-3 py-2 rounded-l-lg">{h.idHorario}</td>
-                      <td className="px-3 py-2">{h.idProfesor}</td>
                       <td className="px-3 py-2">{h.dia}</td>
                       <td className="px-3 py-2">{h.horario}</td>
                       <td className="px-3 py-2 flex gap-2">
@@ -246,5 +230,3 @@ export default function HorarioPage() {
     </DashboardShell>
   );
 }
-
-

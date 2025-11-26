@@ -9,7 +9,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       data: {
         dia: data.dia,
         horario: data.horario,
-        idProfesor: data.idProfesor
+        // idProfesor eliminado - se maneja en ProfesorHorario
       },
     });
     return NextResponse.json(horario);
@@ -20,9 +20,16 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    // Primero eliminar las relaciones en ProfesorHorario
+    await prisma.profesorHorario.deleteMany({
+      where: { idHorario: Number(params.id) },
+    });
+
+    // Luego eliminar el horario
     await prisma.horario.delete({
       where: { idHorario: Number(params.id) },
     });
+
     return NextResponse.json({ message: "Horario eliminado" });
   } catch (error) {
     return NextResponse.json({ error: "Error al eliminar horario" }, { status: 500 });

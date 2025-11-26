@@ -193,7 +193,7 @@ export default function HorarioProfesorReport() {
                           title="Ver detalles de cupos"
                           disabled={item.cupos === 0}
                         >
-                          {item.cupos}/10
+                          {item.cupos}/15
                         </button>
                       </td>
                     </tr>

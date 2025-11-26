@@ -91,19 +91,6 @@ model PermisosModulos {
   @@map("PermisosModulos")
 }
 
-model Profesor {
-  idProfesor     Int     @id @default(autoincrement())
-  nombreCompleto String  @db.VarChar(80)
-  correo         String? @db.VarChar(120)
-  telefono       String? @db.VarChar(30)
-  jornada        String? @db.VarChar(90)
-  activo         String? @default("A") @db.VarChar(10)
-
-  horarios         Horario[]           // Relación inversa con Horario
-  profesorHorarios ProfesorHorario[]   // Relación inversa con ProfesorHorario
-
-  @@map("Profesor")
-}
 
 model Estudiante{
   idEstudiante    Int       @id @default(autoincrement()) @map("IdEstudiante")
@@ -182,13 +169,24 @@ model Inventario {
 }
 
 
-model Horario {
-  idHorario  Int    @id @default(autoincrement())
-  idProfesor Int
-  dia       String @db.VarChar(20)
-  horario   String @db.VarChar(50)
+model Profesor {
+  idProfesor      Int               @id @default(autoincrement()) @map("idProfesor")
+  nombreCompleto  String            @db.VarChar(80)
+  correo          String?           @db.VarChar(120)
+  telefono        String?           @db.VarChar(30)
+  jornada         String?           @db.VarChar(90)
+  activo          String?           @db.VarChar(10) @default("A")
 
-  profesor  Profesor @relation(fields: [idProfesor], references: [idProfesor])
+  profesorHorarios ProfesorHorario[]
+
+  @@map("Profesor")
+}
+
+model Horario {
+  idHorario  Int                @id @default(autoincrement()) @map("idHorario")
+  dia        String?            @db.VarChar(100)
+  horario    String?            @db.VarChar(100)
+
   profesorHorarios ProfesorHorario[]
 
   @@map("Horario")
@@ -198,8 +196,8 @@ model ProfesorHorario {
   idProfesor Int
   idHorario  Int
 
-  profesor Profesor @relation(fields: [idProfesor], references: [idProfesor])
-  horario  Horario  @relation(fields: [idHorario], references: [idHorario])
+  profesor   Profesor @relation(fields: [idProfesor], references: [idProfesor])
+  horario    Horario  @relation(fields: [idHorario], references: [idHorario])
 
   @@id([idProfesor, idHorario])
   @@map("ProfesorHorario")

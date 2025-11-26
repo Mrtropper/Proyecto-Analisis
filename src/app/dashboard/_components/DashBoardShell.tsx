@@ -181,7 +181,7 @@ export default function DashboardShell({
                           EstudianteInstrumento
                         </Link>
                         <Link
-                          href="/dashboard/reportes/profesor-cupos"
+                          href="/dashboard/reportes/profesorCupos"
                           className="block px-4 py-2 text-sm text-neutral-100 hover:bg-neutral-700"
                           role="menuitem"
                           onClick={() => setIsReportesOpen(false)}
