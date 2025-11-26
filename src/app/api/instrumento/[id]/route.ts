@@ -1,7 +1,6 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { Instrumento } from "@/types/Instrumento";
 
 interface Context {
   params: {
@@ -9,23 +8,65 @@ interface Context {
   };
 }
 
-// GET: Consultar un instrumento por ID
-export async function GET(_request: Request, context: Context) {
+// GET: Buscar instrumentos por id o nombre
+export async function GET(request: Request) {
   try {
-    const id = Number(context?.params?.id);
-    const instrumento: Instrumento | null = await prisma.instrumento.findUnique({
-      where: { idInstrumento: id },
-    });
+    const { searchParams } = new URL(request.url);
 
-    if (!instrumento) {
-      return NextResponse.json({ error: "Instrumento no encontrado" }, { status: 404 });
+    const id = searchParams.get("id");
+    const nombre = searchParams.get("nombre");
+
+    //Buscar por ID
+    if (id) {
+      const instrumento = await prisma.instrumento.findUnique({
+        where: { idInstrumento: Number(id) },
+        select: {
+          idInstrumento: true,
+          nombre: true,
+        },
+      });
+
+      if (!instrumento) {
+        return NextResponse.json(
+          { error: "Instrumento no encontrado" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(instrumento);
     }
 
-    return NextResponse.json(instrumento);
-  } catch (e) {
-    return NextResponse.json({ error: "Error al consultar instrumento", e}, { status: 500 });
+    // Buscar por nombre
+    if (nombre) {
+      const instrumentos = await prisma.instrumento.findMany({
+        where: {
+          OR: [
+            { nombre: { contains: nombre } },
+            { nombre: { contains: nombre.toLowerCase() } },
+            { nombre: { contains: nombre.toUpperCase() } },
+          ],
+        },
+        select: {
+          idInstrumento: true,
+          nombre: true,
+        },
+      });
+
+      return NextResponse.json(instrumentos);
+    }
+
+    return NextResponse.json([]);
+
+  } catch (error) {
+    console.error("Error en búsqueda de instrumento:", error);
+    return NextResponse.json(
+      { error: "Error al buscar instrumento" },
+      { status: 500 }
+    );
   }
 }
+
+
 
 // PUT: Editar un instrumento
 export async function PUT(request: Request, context: Context) {
