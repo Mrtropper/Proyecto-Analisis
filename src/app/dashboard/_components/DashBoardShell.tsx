@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { ReactNode, useState } from "react";
 
 export function KPICard({
@@ -8,10 +9,10 @@ export function KPICard({
   hint,
 }: { title: string; value: string | number; hint?: string }) {
   return (
-    <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-4 shadow">
-      <p className="text-sm text-neutral-400">{title}</p>
-      <p className="mt-2 text-3xl font-bold">{value}</p>
-      {hint ? <p className="mt-1 text-xs text-neutral-400">{hint}</p> : null}
+    <div className="rounded-2xl border border-neutral-300 bg-neutral-100 p-4 shadow">
+      <p className="text-sm text-neutral-500">{title}</p>
+      <p className="mt-2 text-3xl font-bold text-neutral-900">{value}</p>
+      {hint ? <p className="mt-1 text-xs text-neutral-500">{hint}</p> : null}
     </div>
   );
 }
@@ -38,31 +39,46 @@ export default function DashboardShell({
   const [isGestionOpen, setIsGestionOpen] = useState(false);
 
   return (
-    <main className="min-h-dvh bg-neutral-950 text-neutral-100">
-      <header className="sticky top-0 z-10 border-b border-neutral-800 bg-neutral-900/60 backdrop-blur">
+    // ⬇⬇⬇ Fondo con la imagen ocupando toda la pantalla
+    <div
+      className="min-h-dvh text-neutral-100 flex flex-col bg-cover bg-center"
+      style={{ backgroundImage: "url('/image-bg.png')" }} // o "/image.png"
+    >
+      {/* ---------------- HEADER BLANCO ---------------- */}
+      <header className="sticky top-0 z-10 border-b border-neutral-300 bg-white text-neutral-900">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+          {/* Branding + rol */}
           <div className="flex items-center gap-3">
-            <span className="text-lg font-semibold">GirlsBulk</span>
-            <span className="rounded-full border border-neutral-700 bg-neutral-800 px-2 py-0.5 text-xs text-neutral-300">
+            <Image
+              src="/logo.png"
+              alt="SINEM Logo"
+              width={50}
+              height={50}
+              className="object-contain"
+            />
+
+            <span className="rounded-full border border-neutral-300 bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700">
               Rol: {roleLabel}
             </span>
           </div>
 
-          <nav className="flex items-center gap-4 text-sm text-neutral-300">
+          {/* NAV */}
+          <nav className="flex items-center gap-4 text-sm text-neutral-700">
             {isAdmin && (
               <>
-                <Link href="/auth/register" className="hover:text-white">
+                <Link href="/auth/register" className="hover:text-black">
                   Crear Usuario
                 </Link>
 
-                <Link href="/dashboard/roles" className="hover:text-white">
+                <Link href="/dashboard/roles" className="hover:text-black">
                   Modificar Roles
                 </Link>
 
+                {/* Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() => setIsGestionOpen(!isGestionOpen)}
-                    className="hover:text-white flex items-center gap-1"
+                    className="hover:text-black flex items-center gap-1"
                   >
                     Gestión Estudiantes
                     <svg
@@ -72,7 +88,6 @@ export default function DashboardShell({
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
                         strokeLinecap="round"
@@ -84,17 +99,11 @@ export default function DashboardShell({
                   </button>
 
                   {isGestionOpen && (
-                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-neutral-800 ring-1 ring-black ring-opacity-5 z-20">
-                      <div
-                        className="py-1"
-                        role="menu"
-                        aria-orientation="vertical"
-                        aria-labelledby="options-menu"
-                      >
+                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white border border-neutral-200 z-20">
+                      <div className="py-1">
                         <Link
                           href="/dashboard/students/SearchStudents"
-                          className="block px-4 py-2 text-sm text-neutral-100 hover:bg-neutral-700"
-                          role="menuitem"
+                          className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
                           onClick={() => setIsGestionOpen(false)}
                         >
                           Buscar Estudiante
@@ -102,8 +111,7 @@ export default function DashboardShell({
 
                         <Link
                           href="/dashboard/students/addStudents"
-                          className="block px-4 py-2 text-sm text-neutral-100 hover:bg-neutral-700"
-                          role="menuitem"
+                          className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
                           onClick={() => setIsGestionOpen(false)}
                         >
                           Añadir Estudiante
@@ -111,8 +119,7 @@ export default function DashboardShell({
 
                         <Link
                           href="/dashboard/students/reports"
-                          className="block px-4 py-2 text-sm text-neutral-100 hover:bg-neutral-700"
-                          role="menuitem"
+                          className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
                           onClick={() => setIsGestionOpen(false)}
                         >
                           Reportes (no funca hasta el final)
@@ -122,34 +129,49 @@ export default function DashboardShell({
                   )}
                 </div>
 
-                <Link href="/dashboard/profesor" className="hover:text-white">
+                <Link href="/dashboard/profesor" className="hover:text-black">
                   Profesores
                 </Link>
 
-                <Link href="/dashboard/instruments" className="hover:text-white">
+                <Link href="/dashboard/instruments" className="hover:text-black">
                   Instrumentos
                 </Link>
 
-                <Link href="/" className="hover:text-white">
-                  Cosa (salir)
+                <Link href="/dashboard" className="hover:text-black">
+                  ????
                 </Link>
               </>
             )}
 
             {isUser && (
-              <Link href="/dashboard/profile" className="hover:text-white">
+              <Link href="/dashboard/profile" className="hover:text-black">
                 Editar perfil
               </Link>
             )}
 
-            <Link href="/auth/login" className="hover:text-white">
+            <Link href="/auth/login" className="hover:text-black">
               Log Out
             </Link>
           </nav>
         </div>
       </header>
 
-      <section className="mx-auto max-w-6xl px-4 py-8">{children}</section>
-    </main>
+      {/* ---------------- CONTENIDO ---------------- */}
+      <section className="mx-auto max-w-6xl px-4 py-8 pb-24 flex-1">
+        {children}
+      </section>
+
+      {/* ---------------- FOOTER ---------------- */}
+      <footer className="fixed bottom-0 inset-x-0 z-50 bg-white/95 border-t border-neutral-300 flex justify-center items-center py-2">
+        <Image
+          src="/footer.png"
+          alt="SINEM"
+          width={500}
+          height={150}
+          className="object-contain"
+          priority
+        />
+      </footer>
+    </div>
   );
 }

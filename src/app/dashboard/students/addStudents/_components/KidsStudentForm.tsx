@@ -198,7 +198,7 @@ export default function KidsStudentForm() {
         </div>
       )}
 
-      <form onSubmit={save} className="rounded border border-neutral-800 bg-neutral-900/60 p-6">
+      <form onSubmit={save} className="rounded border border-neutral-800 bg-neutral-900 p-6">
         <div className="flex flex-col md:flex-row gap-6">
 
           {/* Estudiante */}

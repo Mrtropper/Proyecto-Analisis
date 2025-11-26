@@ -5,7 +5,7 @@ import DashboardShell from "@/app/dashboard/_components/DashBoardShell";
 import RegularStudentForm from "@/app/dashboard/students/addStudents/_components/RegularStudentForm";
 import KidsStudentForm from "@/app/dashboard/students/addStudents/_components/KidsStudentForm";
 import SpecialStudentForm from "@/app/dashboard/students/addStudents/_components/SpecialStudentForm";
-import ServiceStudentForm from "@/app/dashboard/students/addStudents/_components/ServiceStudentForm"; 
+import ServiceStudentForm from "@/app/dashboard/students/addStudents/_components/ServiceStudentForm";
 
 type StudentType = "REGULAR" | "KIDS" | "SPECIAL" | "SERVICE";
 
@@ -37,7 +37,12 @@ export default function StudentsPage() {
 
   return (
     <DashboardShell role="ADMIN">
-      <h1 className="text-3xl font-bold mb-6 text-white">Seleccion de Formulario de estudiantes</h1>
+      <div className="w-full max-w-xl bg-neutral-900 border border-neutral-700 rounded-xl p-4 shadow-xl backdrop-blur-sm mb-6">
+        <h1 className="text-2xl font-bold text-white text-center">
+          Selección de Formulario de Estudiantes
+        </h1>
+      </div>
+
 
       {/* Botones de Selección */}
       <div className="flex flex-wrap gap-4 mb-10 p-4 border-b border-neutral-800">
@@ -59,7 +64,7 @@ export default function StudentsPage() {
       </div>
 
       {/* Área de Visualización del Formulario */}
-      <div className="p-6 rounded-xl bg-neutral-900/60 border border-neutral-800">
+      <div className="p-6 rounded-xl bg-zinc-800 border border-neutral-800">
         <h2 className="text-xl font-semibold mb-4 text-neutral-200">
           Formulario: {studentOptions.find(o => o.id === studentType)?.label}
         </h2>

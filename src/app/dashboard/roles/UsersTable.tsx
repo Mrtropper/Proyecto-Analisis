@@ -32,7 +32,7 @@ export default function UsersTable({ onSelect, refreshCounter }: { onSelect: (id
   }
 
   return (
-    <div className="rounded border border-neutral-800 bg-neutral-900/60 p-4">
+    <div className="rounded border border-neutral-800 bg-neutral-900 p-4">
       <h3 className="text-sm font-medium mb-3">Usuarios</h3>
       {loading ? (
         <p className="text-sm text-neutral-400">Cargando usuarios...</p>

@@ -22,6 +22,10 @@ export default function AdminDashboard() {
           <li>Revisar reportes de contenido</li>
         </ul>
       </div>
+      
     </DashboardShell>
+
   );
+
+  
 }

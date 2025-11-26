@@ -159,8 +159,8 @@ export default function StudentDetailView({ studentId }: { studentId: string }) 
 
     // --- Renderizado de los Datos ---
     return (
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 bg-neutral-900/60 min-h-screen text-white">
-            <h1 className="text-3xl font-bold text-sky-400 mb-6 border-b border-neutral-700 pb-2">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 bg-zinc-900 min-h-screen text-white">
+            <h1 className="text-3xl font-bold text-neutral-50 mb-6 border-b border-neutral-700 pb-2">
                 Detalles del Estudiante: {studentDetail.nombreCompleto}
             </h1>
 

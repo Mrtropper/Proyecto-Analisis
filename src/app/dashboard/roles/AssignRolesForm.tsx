@@ -73,7 +73,7 @@ export default function AssignRolesForm({ userIdFromTable, onAction }: { userIdF
   }
 
   return (
-    <div className="rounded border border-neutral-800 bg-neutral-900/60 p-6">
+    <div className="rounded border border-neutral-800 bg-neutral-900 p-6">
       <label className="block text-sm text-neutral-300">ID de usuario</label>
       <div className="flex gap-2 mt-2">
         <input

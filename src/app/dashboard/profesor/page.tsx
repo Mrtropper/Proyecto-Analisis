@@ -1,4 +1,6 @@
 "use client";
+import DashboardShell, { KPICard } from "@/app/dashboard/_components/DashBoardShell";
+
 
 
 import React, { useState } from "react";
@@ -40,10 +42,11 @@ export default function ProfesorRegisterPage() {
   };
 
   return (
+     <DashboardShell role="ADMIN">
     <main className="flex flex-col items-center justify-center min-h-[80vh] text-white">
       <section className="w-full max-w-md bg-neutral-900 rounded-xl shadow-lg p-8">
         <h1 className="text-3xl font-bold mb-6">Registrar Profesor</h1>
-        <a href="/dashboard" className="mb-6 inline-block text-sky-400 hover:underline">&larr; Volver al panel principal</a>
+        <a href="/dashboard/roles/admin" className="mb-6 inline-block text-sky-400 hover:underline">&larr; Volver al panel principal</a>
         <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="nombreCompleto" className="block mb-1 font-medium">Nombre completo</label>
@@ -109,5 +112,6 @@ export default function ProfesorRegisterPage() {
         </form>
       </section>
     </main>
+    </DashboardShell>
   );
 }

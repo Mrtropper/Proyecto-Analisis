@@ -219,31 +219,45 @@ export default function SearchForm() {
 
     return (
         <div className="p-4">
-            {/* Barra de busqueda y boton */}
-            <div className="flex gap-4 mb-8">
-                {/* Input de busqueda */}
-                <input
-                    type="text"
-                    placeholder="Buscar por nombre o cédula (0-0000-0000)"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    // Permite buscar con 'Enter'
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            handleSearch();
-                        }
-                    }}
-                    className="flex-grow p-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500 focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-                />
+            {/* TARJETA NEGRA PARA BUSCADOR */}
+            <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6 shadow-xl mb-8 backdrop-blur-sm">
+
+                <h1 className="text-3xl font-bold mb-4 text-white">
+                    Buscar Estudiantes
+                </h1>
+
+                {/* Barra de búsqueda */}
+                <div className="flex gap-4">
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre o cédula (0-0000-0000)"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSearch();
+                        }}
+                        className="flex-grow p-3 rounded-xl border border-neutral-700 
+                   bg-neutral-800 text-white placeholder-neutral-400
+                   focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                    />
+                </div>
+
             </div>
 
-            {isLoading && <p className="text-center text-neutral-400 mb-4">Cargando estudiantes...</p>}
-            {errorMsg && <p className="text-center text-red-500 mb-4">{errorMsg}</p>}
+
+            {isLoading && (
+                <div className="flex justify-center items-center py-6">
+                    <div className="flex items-center gap-3">
+                        <div className="h-6 w-6 border-4 border-neutral-600 border-t-sky-500 rounded-full animate-spin"></div>
+                        <span className="text-neutral-900">Cargando estudiantes...</span>
+                    </div>
+                </div>
+            )}
 
             {/* Contenedor de la Tabla */}
-            <div className="overflow-x-auto rounded-lg border border-neutral-800">
-                <table className="min-w-full divide-y divide-neutral-700">
-                    <thead className="bg-neutral-800">
+            <div className="overflow-x-auto rounded-lg border border-neutral-800 bg-neutral-900">
+                <table className="min-w-full divide-y divide-neutral-800 bg-neutral-900">
+                    <thead className="bg-neutral-900">
                         <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
                                 Nombre Completo
@@ -254,13 +268,13 @@ export default function SearchForm() {
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
                                 Estado
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
-                            </th>
+                            <th scope="col" className="px-6 py-3"></th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-neutral-800">
+
+                    <tbody className="divide-y divide-neutral-800 bg-neutral-900">
                         {filteredStudents.map((student) => (
-                            <tr key={student.idEstudiante} className="hover:bg-neutral-800/50 transition-colors duration-150">
+                            <tr key={student.idEstudiante} className="hover:bg-neutral-800 transition-colors duration-150">
                                 <td className="px-6 py-4 whitespace-nowrap text-base font-semibold text-neutral-200">
                                     {student.nombreCompleto}
                                 </td>
@@ -268,29 +282,26 @@ export default function SearchForm() {
                                     {student.cedula}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <span 
-                                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                            student.status === 'A' 
-                                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300' 
-                                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                        }`}
+                                    <span
+                                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${student.status === 'A'
+                                            ? 'bg-emerald-600 text-white'
+                                            : 'bg-red-600 text-white'
+                                            }`}
                                     >
                                         {student.status}
                                     </span>
                                 </td>
-
-                                {/* COLUMNA DE BOTONES */}
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => seeStudent(student.idEstudiante)}
-                                            className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                                            className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
                                         >
                                             Ver
                                         </button>
                                         <button
                                             onClick={() => handleStatus(student)}
-                                            className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                                            className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white hover:bg-blue-700"
                                         >
                                             Estado
                                         </button>
@@ -321,7 +332,7 @@ export default function SearchForm() {
                     idEstudiante={selectedStudent.idEstudiante}
                     nombreCompleto={selectedStudent.nombreCompleto}
                     cedula={selectedStudent.cedula}
-                    currentStatus={selectedStudent.status} 
+                    currentStatus={selectedStudent.status}
                     onClose={() => setIsModalOpen(false)}
                     onSave={handleSaveStatus}
                 />
