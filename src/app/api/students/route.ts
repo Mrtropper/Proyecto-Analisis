@@ -76,9 +76,7 @@ export async function GET(request: Request) {
                 contains: nombreCompleto,
             }
         } else if (cedula){
-            whereClause.cedula = {
-                contains: cedula,
-            }
+            whereClause.cedula = cedula;
         }
 
         const estudiante = await prisma.estudiante.findMany({

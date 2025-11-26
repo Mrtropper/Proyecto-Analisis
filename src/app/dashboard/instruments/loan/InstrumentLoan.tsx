@@ -1,15 +1,7 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-
-const API_URLS = {
-  estudiantes: "/api/students",
-  instrumentos: "/api/instrumento",
-  inventario: "/api/inventario",
-  prestamos: "/api/prestamoInstrumento",
-};
 
 interface Prestamo {
   idPrestamo: number;
@@ -20,19 +12,13 @@ interface Prestamo {
   Estatus: string | null;
 }
 
+// Interfaz para los estudiantes de la API
 interface EstudianteAPI {
-  idEstudiante: number;
+  IdEstudiante: number; 
   nombreCompleto: string | null;
-  cedula: string | null;
-  status?: string | null;
 }
 
-interface InstrumentoAPI {
-  idInstrumento: number;
-  nombre: string;
-}
-
-export default function InstrumentLoan() {
+export default function InstrumentForm() {
   const [idEstudiante, setIdEstudiante] = useState("");
   const [idInstrumento, setIdInstrumento] = useState("");
   const [idInventario, setIdInventario] = useState("");
@@ -51,174 +37,177 @@ export default function InstrumentLoan() {
 
   const [searchEstudiante, setSearchEstudiante] = useState("");
   const [searchInstrumento, setSearchInstrumento] = useState("");
+
   const [busqueda, setBusqueda] = useState("");
 
-  const [estudiantes, setEstudiantes] = useState<EstudianteAPI[]>([]);
-  const [originalEstudiantes, setOriginalEstudiantes] = useState<
-    EstudianteAPI[]
+  // Lista dinámica desde la API
+  const [estudiantes, setEstudiantes] = useState<
+    { idEstudiante: number; nombreCompleto: string | null }[]
   >([]);
 
-  const [instrumentos, setInstrumentos] = useState<InstrumentoAPI[]>([]);
-  const [originalInstrumentos, setOriginalInstrumentos] = useState<
-    InstrumentoAPI[]
+  const [instrumentosDisponibles, setInstrumentosDisponibles] = useState<
+    { idInstrumento: string; nombre: string }[]
   >([]);
 
   const [prestamos, setPrestamos] = useState<Prestamo[]>([]);
 
-
-  // INVENTARIO POR INSTRUMENTO
-
-  const obtenerInventarioPorInstrumento = async (id: number) => {
+  // Obtener inventario x instrumento
+  const obtenerInventarioPorInstrumento = async (idInstrumento: number) => {
     try {
-      const res = await fetch(`${API_URLS.inventario}/${id}`);
+      const response = await fetch(`/api/inventario/${idInstrumento}`);
 
-      if (!res.ok) {
-        setIdInventario("Sin inventario");
+      if (!response.ok) {
+        setIdInventario("No se encontró inventario para este instrumento");
         return;
       }
 
-      const data = await res.json();
+      const data = await response.json();
       setIdInventario(data.idInventario || "");
-    } catch {
+    } catch (error) {
+      console.error("Error al obtener inventario:", error);
       setIdInventario("");
     }
   };
 
-  // CARGAR DATOS INICIALES
+  // Cargar instrumentos y estudiantes
   useEffect(() => {
-    const load = async () => {
+    const fetchInstrumentos = async () => {
       try {
-        // estudiantes
-        const resE = await fetch(API_URLS.estudiantes);
-        if (resE.ok) {
-          const dataE: EstudianteAPI[] = await resE.json();
-          setEstudiantes(dataE);
-          setOriginalEstudiantes(dataE);
-        }
-
-        // instrumentos
-        const resI = await fetch(API_URLS.instrumentos);
-        if (resI.ok) {
-          const dataI = await resI.json();
-          setInstrumentos(dataI);
-          setOriginalInstrumentos(dataI);
-        }
-
-        // préstamos
-        const resP = await fetch(`${API_URLS.prestamos}?simple=true`);
-        if (resP.ok) {
-          setPrestamos(await resP.json());
-        }
-      } catch {}
+        const response = await fetch("/api/instrumento");
+        if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+        const data = await response.json();
+        const formato = data.map(
+          (inst: { idInstrumento: string; nombre: string }) => ({
+            idInstrumento: inst.idInstrumento,
+            nombre: inst.nombre,
+          })
+        );
+        setInstrumentosDisponibles(formato);
+      } catch (error) {
+        console.error("Error al cargar instrumentos:", error);
+      }
     };
 
-    load();
+    const fetchEstudiantes = async () => {
+      try {
+        const response = await fetch("/api/students");
+        if (!response.ok) throw new Error("Error al cargar estudiantes");
+
+        const data: EstudianteAPI[] = await response.json();
+
+        const formato = data.map((est) => ({
+          idEstudiante: est.IdEstudiante,
+          nombreCompleto: est.nombreCompleto ?? "",
+        }));
+
+        setEstudiantes(formato);
+      } catch (e) {
+        console.error("Error al cargar estudiantes:", e);
+      }
+    };
+
+    const cargarPrestamos = async () => {
+      try {
+        const res = await fetch("/api/prestamoInstrumento?simple=true", {
+          cache: "no-store",
+        });
+        const data = await res.json();
+        setPrestamos(data);
+      } catch (e) {
+        console.error("Error al cargar préstamos:", e);
+      }
+    };
+
+    fetchInstrumentos();
+    fetchEstudiantes();
+    cargarPrestamos();
   }, []);
 
   const recargarPrestamos = async () => {
     try {
-      const res = await fetch(`${API_URLS.prestamos}?simple=true`);
-      if (res.ok) {
-        setPrestamos(await res.json());
-      }
-    } catch {}
+      const res = await fetch("/api/prestamoInstrumento?simple=true", {
+        cache: "no-store",
+      });
+      const data = await res.json();
+      setPrestamos(data);
+    } catch (e) {
+      console.error("Error al recargar préstamos:", e);
+    }
   };
 
-  // INVENTARIO AUTOMÁTICO AL CAMBIAR INSTRUMENTO
+  // Buscar idInventario al cambiar instrumento
   useEffect(() => {
     if (!idInstrumento) return;
     obtenerInventarioPorInstrumento(Number(idInstrumento));
   }, [idInstrumento]);
 
-  // BUSCAR ESTUDIANTE
-  useEffect(() => {
-    const buscar = async () => {
-      const term = searchEstudiante.trim();
+  // Buscar estudiantes
+  const filteredEstudiantes = estudiantes.filter((est) => {
+    const id = est?.idEstudiante ? est.idEstudiante.toString() : "";
+    const nombre = est?.nombreCompleto
+      ? est.nombreCompleto.toLowerCase()
+      : "";
+    const q = searchEstudiante.toLowerCase();
 
-      let url = API_URLS.estudiantes;
+    return id.includes(q) || nombre.includes(q);
+  });
 
-      if (term !== "") {
-        const isCedula = /^\d+$/.test(term);
-        const key = isCedula ? "cedula" : "nombreCompleto";
-        url = `${API_URLS.estudiantes}?${key}=${term}`;
-      }
+  const filteredInstrumentos = instrumentosDisponibles.filter(
+    (inst) =>
+      inst.idInstrumento
+        ?.toString()
+        .toLowerCase()
+        .includes(searchInstrumento.toLowerCase()) ||
+      inst.nombre?.toLowerCase().includes(searchInstrumento.toLowerCase())
+  );
 
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
+  const prestamosFiltrados = prestamos.filter((p) => {
+    const q = busqueda.toLowerCase();
+    return (
+      p.idPrestamo.toString().includes(q) ||
+      p.idEstudiante.toString().includes(q) ||
+      p.idInstrumento.toString().includes(q) ||
+      p.idInventario.toLowerCase().includes(q) ||
+      p.fechaEntrega.toString().toLowerCase().includes(q) ||
+      (p.Estatus || "").toLowerCase().includes(q)
+    );
+  });
 
-        if (Array.isArray(data)) {
-          const activos = data.filter(
-            (s: EstudianteAPI) =>
-              s.status?.toString().trim().toLowerCase() === "a"
-          );
-          setEstudiantes(activos);
-        } else {
-          setEstudiantes([]);
-        }
-      } catch (error) {
-        console.error("Error buscando estudiantes:", error);
-        setEstudiantes([]);
-      }
-    };
-
-    const t = setTimeout(buscar, 300);
-    return () => clearTimeout(t);
-  }, [searchEstudiante]);
-
- 
-  // BUSCAR INSTRUMENTO
-  useEffect(() => {
-    const buscar = async () => {
-      const q = searchInstrumento.trim();
-
-      if (q === "") {
-        setInstrumentos(originalInstrumentos);
-        return;
-      }
-
-      const isNum = !isNaN(Number(q));
-      const query = isNum ? `id=${q}` : `nombre=${q}`;
-
-      try {
-        const res = await fetch(`${API_URLS.instrumentos}?${query}`);
-        if (!res.ok) return;
-
-        const data = await res.json();
-        const lista = Array.isArray(data) ? data : [data];
-        setInstrumentos(lista);
-      } catch {}
-    };
-
-    const t = setTimeout(buscar, 300);
-    return () => clearTimeout(t);
-  }, [searchInstrumento, originalInstrumentos]);
-
-  // GUARDAR / EDITAR
+  //Guardar / Modificar préstamo
   const handleGuardar = async () => {
     if (!idEstudiante || !idInstrumento || !idInventario || !fechaEntrega) {
-      alert("Complete todos los campos");
+      alert("Por favor complete todos los campos antes de guardar.");
       return;
     }
 
     try {
       setGuardando(true);
 
-      const fecha = new Date(fechaEntrega).toISOString().split("T")[0];
+      const fechaFormateada = new Date(fechaEntrega)
+        .toISOString()
+        .split("T")[0];
 
-      if (modoEdicion && idPrestamoEditando) {
-        const res = await fetch(`${API_URLS.prestamos}/${idPrestamoEditando}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fechaEntrega: fecha, Estatus: estatus }),
-        });
+      // EDITAR
+      if (modoEdicion && idPrestamoEditando !== null) {
+        const response = await fetch(
+          `/api/prestamoInstrumento/${idPrestamoEditando}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fechaEntrega: fechaFormateada,
+              Estatus: estatus,
+            }),
+          }
+        );
 
-        if (!res.ok) {
-          alert("No se pudo modificar.");
+        if (!response.ok) {
+          const errorData: { error?: string } = await response.json();
+          alert(errorData.error || "No se pudo modificar el préstamo.");
           return;
         }
 
-        alert("Modificado correctamente.");
+        alert("Préstamo modificado correctamente.");
         setModoEdicion(false);
         setIdPrestamoEditando(null);
         setIdEstudiante("");
@@ -230,138 +219,137 @@ export default function InstrumentLoan() {
         return;
       }
 
-      const body = {
+      // GUARDAR NUEVO
+      const nuevoPrestamo = {
         idEstudiante,
         idInstrumento,
         idInventario,
-        fechaEntrega: fecha,
+        fechaEntrega: fechaFormateada,
       };
 
-      const res = await fetch(API_URLS.prestamos, {
+      const response = await fetch("/api/prestamoInstrumento", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(nuevoPrestamo),
       });
 
-      if (!res.ok) {
-        alert("Error al guardar");
-        return;
+      if (response.ok) {
+        alert("Préstamo guardado correctamente.");
+
+        await fetch(`/api/inventario/${idInventario}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ Estado: "Prestado" }),
+        });
+
+        setIdEstudiante("");
+        setIdInstrumento("");
+        setIdInventario("");
+        setFechaEntrega("");
+        setEstatus("Prestado");
+        await recargarPrestamos();
+      } else {
+        const errorData: { error?: string } = await response.json();
+        alert(errorData.error || "No se pudo guardar el préstamo.");
       }
-
-      alert("Guardado correctamente.");
-
-      await fetch(`${API_URLS.inventario}/${idInventario}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ Estado: "Prestado" }),
-      });
-
-      setIdEstudiante("");
-      setIdInstrumento("");
-      setIdInventario("");
-      setFechaEntrega("");
-      setEstatus("Prestado");
-
-      await recargarPrestamos();
+    } catch (error) {
+      console.error("Error al guardar el préstamo:", error);
+      alert("Ocurrió un error al intentar guardar el préstamo.");
     } finally {
       setGuardando(false);
     }
   };
 
-  // ELIMINAR
+  // Eliminar préstamo
   const handleEliminar = async (idPrestamo: number) => {
-    if (!confirm("¿Eliminar?")) return;
+    if (!confirm("¿Seguro que desea eliminar este préstamo?")) return;
 
     try {
-      const res = await fetch(`${API_URLS.prestamos}/${idPrestamo}`, {
+      const response = await fetch(`/api/prestamoInstrumento/${idPrestamo}`, {
         method: "DELETE",
       });
 
-      if (!res.ok) {
-        alert("No se pudo eliminar");
-        return;
-      }
+      if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      alert(error.error || "No se pudo eliminar el préstamo.");
+      return;
+    }
 
-      alert("Eliminado");
+      alert("Préstamo eliminado correctamente.");
       await recargarPrestamos();
-    } catch {}
+    } catch (e) {
+      console.error("Error al eliminar préstamo:", e);
+      alert("Error inesperado al eliminar el préstamo.");
+    }
   };
 
-
-  // ACTIVAR EDICIÓN
-  const activarEdicion = (p: Prestamo) => {
+  // Activar modo edición
+  const activarEdicion = (prestamo: Prestamo) => {
     setModoEdicion(true);
-
-    setIdPrestamoEditando(p.idPrestamo);
-    setIdEstudiante(String(p.idEstudiante));
-    setIdInstrumento(String(p.idInstrumento));
-    setIdInventario(p.idInventario);
-    setFechaEntrega(p.fechaEntrega.split("T")[0]);
-    setEstatus(p.Estatus || "Prestado");
+    setIdPrestamoEditando(prestamo.idPrestamo);
+    setIdEstudiante(prestamo.idEstudiante.toString());
+    setIdInstrumento(prestamo.idInstrumento.toString());
+    setIdInventario(prestamo.idInventario);
+    setFechaEntrega(prestamo.fechaEntrega.split("T")[0] || "");
+    setEstatus(prestamo.Estatus || "Prestado");
   };
 
-  const prestamosFiltrados = prestamos.filter((p) => {
-    const q = busqueda.toLowerCase();
-    return (
-      p.idPrestamo.toString().includes(q) ||
-      p.idEstudiante.toString().includes(q) ||
-      p.idInstrumento.toString().includes(q) ||
-      p.idInventario.toLowerCase().includes(q) ||
-      p.fechaEntrega.toString().includes(q) ||
-      (p.Estatus || "").toLowerCase().includes(q)
-    );
-  });
-
-  // RENDER
   return (
     <div>
-      {/* BOTONES */}
+      {/* Botones principales */}
       <div className="flex gap-2 mb-3">
         <Link href="/dashboard/instruments">
-          <button className="bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
+          <button className="w-50 bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
             Agregar Instrumento
           </button>
         </Link>
 
         <Link href="/dashboard/instruments/inventario">
-          <button className="bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
+          <button className="w-50 bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
             Inventario
           </button>
         </Link>
 
         <Link href="/dashboard/instruments/loan">
-          <button className="bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
+          <button className="w-50 bg-blue-950 hover:bg-gray-700 text-white px-4 py-2 rounded">
             Préstamo Instrumento
           </button>
         </Link>
       </div>
 
+      {/* FORMULARIO + TABLA */}
       <div className="flex gap-6 items-start mt-6">
         {/* FORMULARIO */}
-        <div className="w-[420px] ml-[-10px]">
+        <div className="w-[420px]">
           <div className="p-4 border border-gray-900 rounded relative">
             <h2 className="text-xl font-semibold text-blue-400">
               {modoEdicion ? "Modificar Préstamo" : "Registro de Préstamo"}
             </h2>
+            <p className="mt-2 text-neutral-100">
+              {modoEdicion
+                ? "Edite la fecha y el estado del préstamo"
+                : "Ingrese los datos correspondientes al préstamo del instrumento"}
+            </p>
 
-            {/* Estudiante */}
+            {/* Campo Estudiante */}
             <div className="mt-4">
               <label className="block text-sm text-neutral-200 mb-1">
-                Estudiante
+                ID del estudiante
               </label>
-
               {modoEdicion ? (
                 <input
+                  type="text"
                   value={idEstudiante}
                   readOnly
-                  className="w-full px-3 py-2 bg-gray-900 text-white rounded opacity-60"
+                  className="w-full px-3 py-2 bg-gray-900 text-white rounded opacity-60 cursor-not-allowed"
                 />
               ) : (
                 <div className="flex gap-2">
                   <input
+                    type="text"
                     value={idEstudiante}
                     readOnly
-                    className="w-full px-3 py-2 bg-gray-900 text-white rounded"
+                    className="w-full px-3 py-2 bg-gray-900 text-white rounded focus:outline-none"
                     placeholder="Seleccione estudiante..."
                   />
                   <button
@@ -374,24 +362,25 @@ export default function InstrumentLoan() {
               )}
             </div>
 
-            {/* Instrumento */}
+            {/* Campo Instrumento */}
             <div className="mt-4">
               <label className="block text-sm text-neutral-200 mb-1">
-                Instrumento
+                ID del instrumento
               </label>
-
               {modoEdicion ? (
                 <input
+                  type="text"
                   value={idInstrumento}
                   readOnly
-                  className="w-full px-3 py-2 bg-gray-900 text-white rounded opacity-60"
+                  className="w-full px-3 py-2 bg-gray-900 text-white rounded opacity-60 cursor-not-allowed"
                 />
               ) : (
                 <div className="flex gap-2">
                   <input
+                    type="text"
                     value={idInstrumento}
                     readOnly
-                    className="w-full px-3 py-2 bg-gray-900 text-white rounded"
+                    className="w-full px-3 py-2 bg-gray-900 text-white rounded focus:outline-none"
                     placeholder="Seleccione instrumento..."
                   />
                   <button
@@ -404,15 +393,16 @@ export default function InstrumentLoan() {
               )}
             </div>
 
-            {/* Inventario */}
+            {/* Campo Inventario */}
             <div className="mt-4">
               <label className="block text-sm text-neutral-200 mb-1">
-                Inventario
+                ID de inventario
               </label>
               <input
+                type="text"
                 value={idInventario}
                 readOnly
-                className="w-full px-3 py-2 bg-gray-900 text-white rounded"
+                className="w-full px-3 py-2 bg-gray-900 text-white rounded focus:outline-none focus:ring focus:ring-blue-400 opacity-90"
               />
             </div>
 
@@ -426,7 +416,7 @@ export default function InstrumentLoan() {
                 value={fechaEntrega}
                 onChange={(e) => setFechaEntrega(e.target.value)}
                 min={new Date().toISOString().split("T")[0]}
-                className="w-full px-3 py-2 bg-gray-900 text-white rounded"
+                className="w-full px-3 py-2 bg-gray-900 text-white rounded focus:outline-none focus:ring focus:ring-blue-400"
               />
             </div>
 
@@ -434,12 +424,12 @@ export default function InstrumentLoan() {
             {modoEdicion && (
               <div className="mt-4">
                 <label className="block text-sm text-neutral-200 mb-1">
-                  Estado
+                  Estado del préstamo
                 </label>
                 <select
                   value={estatus}
                   onChange={(e) => setEstatus(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-900 text-white rounded"
+                  className="w-full px-3 py-2 bg-gray-900 text-white rounded focus:outline-none focus:ring focus:ring-blue-400"
                 >
                   <option value="Prestado">Prestado</option>
                   <option value="Devuelto">Devuelto</option>
@@ -448,12 +438,14 @@ export default function InstrumentLoan() {
               </div>
             )}
 
-            {/* Guardar */}
+            {/* Botón Guardar */}
             <div className="flex justify-end mt-6">
               <button
                 onClick={handleGuardar}
                 disabled={guardando}
-                className="bg-blue-950 hover:bg-gray-700 text-white px-6 py-2 rounded"
+                className={`bg-blue-950 hover:bg-gray-700 text-white px-6 py-2 rounded ${
+                  guardando ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               >
                 {guardando
                   ? "Guardando..."
@@ -463,7 +455,7 @@ export default function InstrumentLoan() {
               </button>
             </div>
 
-            {/* MODAL ESTUDIANTE */}
+            {/* 🔵 MODAL ESTUDIANTES */}
             {showEstudianteModal && (
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
                 <div className="bg-gray-900 border border-blue-800 rounded-lg p-6 w-96">
@@ -473,26 +465,25 @@ export default function InstrumentLoan() {
 
                   <input
                     type="text"
-                    placeholder="Buscar estudiante..."
+                    placeholder="Buscar o ingresar ID de estudiante..."
+                    className="w-full px-3 py-2 bg-gray-800 text-white rounded mb-4 focus:outline-none focus:ring focus:ring-blue-400"
                     value={searchEstudiante}
                     onChange={(e) => setSearchEstudiante(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 text-white rounded mb-4"
                   />
 
-                  <ul className="bg-gray-800 rounded max-h-40 overflow-y-auto text-white">
-                    {estudiantes.length > 0 ? (
-                      estudiantes.map((est) => (
+                  <ul className="bg-gray-800 rounded max-h-40 overflow-y-auto text-white mb-4">
+                    {filteredEstudiantes.length > 0 ? (
+                      filteredEstudiantes.map((est) => (
                         <li
-                          key={est.idEstudiante}
+                          key={est.idEstudiante} // ← CAMBIO NECESARIO
                           className="px-3 py-2 hover:bg-gray-700 cursor-pointer"
                           onClick={() => {
                             setIdEstudiante(String(est.idEstudiante));
                             setShowEstudianteModal(false);
                             setSearchEstudiante("");
-                            setEstudiantes(originalEstudiantes);
                           }}
                         >
-                          {est.cedula} - {est.nombreCompleto}
+                          {est.idEstudiante} - {est.nombreCompleto}
                         </li>
                       ))
                     ) : (
@@ -502,12 +493,11 @@ export default function InstrumentLoan() {
                     )}
                   </ul>
 
-                  <div className="flex justify-end mt-3">
+                  <div className="flex justify-end gap-2">
                     <button
                       onClick={() => {
                         setShowEstudianteModal(false);
                         setSearchEstudiante("");
-                        setEstudiantes(originalEstudiantes);
                       }}
                       className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded"
                     >
@@ -518,7 +508,7 @@ export default function InstrumentLoan() {
               </div>
             )}
 
-            {/* MODAL INSTRUMENTO */}
+            {/* 🔵 MODAL INSTRUMENTO */}
             {showInstrumentoModal && (
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
                 <div className="bg-gray-900 border border-blue-800 rounded-lg p-6 w-96">
@@ -528,20 +518,20 @@ export default function InstrumentLoan() {
 
                   <input
                     type="text"
-                    placeholder="Buscar por ID o nombre..."
+                    placeholder="Buscar o ingresar ID del instrumento..."
+                    className="w-full px-3 py-2 bg-gray-800 text-white rounded mb-4 focus:outline-none focus:ring focus:ring-blue-400"
                     value={searchInstrumento}
                     onChange={(e) => setSearchInstrumento(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 text-white rounded mb-4"
                   />
 
-                  <ul className="bg-gray-800 rounded max-h-40 overflow-y-auto text-white">
-                    {instrumentos.length > 0 ? (
-                      instrumentos.map((inst) => (
+                  <ul className="bg-gray-800 rounded max-h-40 overflow-y-auto text-white mb-4">
+                    {filteredInstrumentos.length > 0 ? (
+                      filteredInstrumentos.map((inst) => (
                         <li
                           key={inst.idInstrumento}
                           className="px-3 py-2 hover:bg-gray-700 cursor-pointer"
                           onClick={() => {
-                            setIdInstrumento(String(inst.idInstrumento));
+                            setIdInstrumento(inst.idInstrumento);
                             setShowInstrumentoModal(false);
                             setSearchInstrumento("");
                           }}
@@ -556,12 +546,11 @@ export default function InstrumentLoan() {
                     )}
                   </ul>
 
-                  <div className="flex justify-end mt-3">
+                  <div className="flex justify-end">
                     <button
                       onClick={() => {
                         setShowInstrumentoModal(false);
                         setSearchInstrumento("");
-                        setInstrumentos(originalInstrumentos);
                       }}
                       className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded"
                     >
@@ -574,19 +563,20 @@ export default function InstrumentLoan() {
           </div>
         </div>
 
-        {/* TABLA */}
-        <div className="w-[950px] border border-gray-900 rounded p-4">
+        {/* TABLA DE PRÉSTAMOS */}
+        <div className="w-[750px] border border-gray-900 rounded p-4">
           <h2 className="text-xl font-semibold text-blue-400 mb-3">
             Lista de Préstamos
           </h2>
 
+          {/* BUSQUEDA */}
           <div className="mb-4">
             <input
               type="text"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="🔎 Buscar..."
-              className="w-full px-3 py-2 bg-gray-900 text-white rounded border border-gray-700"
+              placeholder="🔎 Buscar por ID préstamo, estudiante, instrumento, inventario, fecha o estado..."
+              className="w-full px-3 py-2 bg-gray-900 text-white rounded border border-gray-700 focus:outline-none focus:ring focus:ring-blue-400"
             />
           </div>
 
@@ -604,7 +594,7 @@ export default function InstrumentLoan() {
                     ID Instrumento
                   </th>
                   <th className="px-3 py-2 border border-gray-700">
-                    Inventario
+                    ID Inventario
                   </th>
                   <th className="px-3 py-2 border border-gray-700">Fecha</th>
                   <th className="px-3 py-2 border border-gray-700">Estado</th>
@@ -614,39 +604,42 @@ export default function InstrumentLoan() {
 
               <tbody className="text-neutral-100">
                 {prestamosFiltrados.map((p) => (
-                  <tr key={p.idPrestamo} className="hover:bg-gray-800">
+                  <tr key={p.idPrestamo} className="hover:bg-gray-800 transition">
                     <td className="px-3 py-2 border border-gray-800">
                       {p.idPrestamo}
                     </td>
                     <td className="px-3 py-2 border border-gray-800">
-                      {estudiantes.find(e => e.idEstudiante === p.idEstudiante)?.nombreCompleto || "Cargando"}
-
+                      {p.idEstudiante}
                     </td>
                     <td className="px-3 py-2 border border-gray-800">
-                      {instrumentos.find(i => i.idInstrumento === p.idInstrumento)?.nombre || "Cargando"} 
+                      {p.idInstrumento}
                     </td>
                     <td className="px-3 py-2 border border-gray-800">
                       {p.idInventario}
                     </td>
                     <td className="px-3 py-2 border border-gray-800">
-                      {p.fechaEntrega.split("T")[0]}
+                      {p.fechaEntrega
+                        ? p.fechaEntrega.toString().split("T")[0]
+                        : ""}
                     </td>
                     <td className="px-3 py-2 border border-gray-800">
-                      {p.Estatus}
+                      {p.Estatus || "Prestado"}
                     </td>
 
-                    <td className="px-3 py-2 border border-gray-800 text-center">
-                      <div className="flex justify-center items-center gap-4">
-
+                    <td className="border border-gray-800 px-2 py-2 text-center w-32">
+                      <div className="flex justify-center gap-6">
+                        {/* EDITAR */}
                         <button
-                          className="text-blue-400 "
+                          className="text-blue-400 hover:text-blue-300"
                           onClick={() => activarEdicion(p)}
                         >
                           ✏️
                         </button>
+
+                        {/* ELIMINAR */}
                         <button
-                          className="text-red-400 "
                           onClick={() => handleEliminar(p.idPrestamo)}
+                          className="text-red-400 hover:text-red-300"
                         >
                           🗑️
                         </button>
