@@ -32,14 +32,20 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(inventarios);
+    const inventariosFormateados = inventarios.map(item => ({
+      idInventario: item.idInventario,
+      idInstrumento: item.idInstrumento,
+      Estado: item.estado, // Se renombra a Estado
+    }));
+
+    return NextResponse.json(inventariosFormateados);
   } catch (e) {
     console.error("Error al listar inventario:", e);
     return NextResponse.json(
       { error: "Error al listar inventario" },
-      { status: 500 }
-    );
-  }
+      { status: 500 }
+    );
+  }
 }
 
 // POST: Crear inventario
