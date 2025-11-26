@@ -97,7 +97,7 @@ export default function SpecialStudentForm() {
     if (!autorizadoRelacion.trim()) { setIsLoading(false); return setMsg("La relación de la persona autorizada es requerida"); }
     if (!autorizadoTelefono.trim()) { setIsLoading(false); return setMsg("El teléfono de la persona autorizada es requerido"); }
 
-    const idPrograma = 3; // ID fijo para estudiantes regulares
+    const idPrograma = 3; // ID fijo para estudiantes con discapacidad
     const studentData = {
       estudiante: {
         cedula: cedula.trim(),
@@ -112,6 +112,7 @@ export default function SpecialStudentForm() {
         gradoEscolar: nivelEscolar.trim(),
         institucion: institucion.trim(),
         numeroPoliza: polizaEstudiantil.trim(),
+        discapacidad: 'e',
         detalles: detalles.trim(),
       },
 
@@ -207,7 +208,7 @@ export default function SpecialStudentForm() {
 
               {/* Número de Cédula */}
               <label className="block text-base font-semibold text-white">Número de Cédula</label>
-              <input value={cedula} onChange={(e) => setCedula(e.target.value)} placeholder="Formato: x-xxxx-xxxx" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              <input value={cedula} onChange={(e) => setCedula(e.target.value)} placeholder="Formato: 0-0000-0000" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Género (Usando select para mejor control) */}
               <label className="block text-base font-semibold text-white">Género</label>
@@ -269,7 +270,7 @@ export default function SpecialStudentForm() {
               {/* Número de Cédula */}
               <label className="block text-base font-semibold text-white">Número de Cédula</label>
               <input
-                value={encargadoCedula} onChange={(e) => setEncargadoCedula(e.target.value)} placeholder="Formato: x-xxxx-xxxx" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+                value={encargadoCedula} onChange={(e) => setEncargadoCedula(e.target.value)} placeholder="Formato: 0-0000-0000" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Número de Teléfono */}
               <label className="block text-base font-semibold text-white">Número de Teléfono</label>

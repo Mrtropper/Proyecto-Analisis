@@ -22,7 +22,7 @@ interface ModalStatusProps {
     cedula: string;
     currentStatus: status; // Estado actual, podrías cargarlo si lo tuvieras
     onClose: () => void;
-    onSave: (cedula: string, nombreCompleto: string, newStatus: status) => void;
+    onSave: (idEstudiante: number, newStatus: status) => void;
 }
 
 const ModalStatus = ({ idEstudiante, nombreCompleto, cedula, currentStatus, onClose, onSave }: ModalStatusProps) => {
@@ -30,7 +30,7 @@ const ModalStatus = ({ idEstudiante, nombreCompleto, cedula, currentStatus, onCl
     const [selectedStatus, setSelectedStatus] = useState<status>(currentStatus);
 
     const handleSave = () => {
-        onSave(cedula, nombreCompleto, selectedStatus);
+        onSave(idEstudiante, selectedStatus);
         onClose(); // Cierra el modal después de guardar
     };
 
@@ -177,25 +177,26 @@ export default function SearchForm() {
     };
 
     //Implementación de la llamada PATCH
-    const handleSaveStatus = async (cedula: string, nombreCompleto: string, newStatus: status) => {
+    const handleSaveStatus = async (idEstudiante: number, newStatus: status) => {
         setIsLoading(true);
         setErrorMsg(null);
 
+        const url = `${API_URL}/${idEstudiante}`;
+
         try {
-            const response = await fetch(API_URL, {
+            const response = await fetch(url, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    cedula: cedula, // Usamos la cédula para el endpoint PATCH
                     status: newStatus,
                 }),
             });
 
             if (response.ok) {
                 // Mostrar mensaje y recargar la lista para reflejar el cambio
-                alert(`Estado de ${nombreCompleto} actualizado a: ${newStatus}.`);
+                alert(`Estado actualizado a: ${newStatus}.`);
                 setIsModalOpen(false); // Cerrar el modal
                 await handleSearch(); // Recargar la lista de estudiantes
             } else {
@@ -223,7 +224,7 @@ export default function SearchForm() {
                 {/* Input de busqueda */}
                 <input
                     type="text"
-                    placeholder="Buscar por nombre o cédula..."
+                    placeholder="Buscar por nombre o cédula (0-0000-0000)"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     // Permite buscar con 'Enter'

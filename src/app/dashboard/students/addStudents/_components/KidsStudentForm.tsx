@@ -74,13 +74,22 @@ export default function KidsStudentForm() {
 
     // Validación mínima
     if (!nombre.trim()) return setMsg("El nombre es requerido");
-    if (!cedula.trim()) return setMsg("La Cédula es requerida");
     if (!genero.trim()) return setMsg("El Género es requerido");
     if (!nacionalidad.trim()) return setMsg("La Nacionalidad es requerida");
     if (!fechaNacimiento.trim()) return setMsg("La Fecha de Nacimiento es requerida");
     if (!direccion.trim()) return setMsg("La Dirección es requerida");
     if (!nivelEscolar.trim()) return setMsg("El Nivel Escolar es requerido");
     if (!institucion.trim()) return setMsg("La Institución Educativa es requerida");
+
+    // Validación Cédula (con formato)
+    const cedulaRegex = /^\d-\d{4}-\d{4}$/; // Formato: X-XXXX-XXXX
+    const cleanedCedula = cedula.trim();
+    if (!cleanedCedula) {
+        return setMsg("La Cédula es requerida.");
+    } else if (!cedulaRegex.test(cleanedCedula)) {
+        return setMsg("La Cédula debe tener el formato correcto (X-XXXX-XXXX).");
+    }
+
     // Validacion encargado legal
     if (!encargadoNombre.trim()) return setMsg("El nombre del encargado legal es requerido");
     if (!encargadoCedula.trim()) return setMsg("La cédula del encargado legal es requerida");
@@ -106,6 +115,7 @@ export default function KidsStudentForm() {
         gradoEscolar: nivelEscolar.trim(),
         institucion: institucion.trim(),
         numeroPoliza: polizaEstudiantil.trim(),
+        discapacidad: null,
         detalles: detalles.trim(),
       },
 
@@ -202,7 +212,7 @@ export default function KidsStudentForm() {
 
               {/* Número de Cédula */}
               <label className="block text-base font-semibold text-white">Número de Cédula</label>
-              <input value={cedula} onChange={(e) => setCedula(e.target.value)} placeholder="Formato: x-xxxx-xxxx" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+              <input value={cedula} onChange={(e) => setCedula(e.target.value)} placeholder="Formato: 0-0000-0000" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Género (Usando select para mejor control) */}
               <label className="block text-base font-semibold text-white">Género</label>
@@ -255,7 +265,7 @@ export default function KidsStudentForm() {
               {/* Número de Cédula */}
               <label className="block text-base font-semibold text-white">Número de Cédula</label>
               <input
-                value={encargadoCedula} onChange={(e) => setEncargadoCedula(e.target.value)} placeholder="Formato: x-xxxx-xxxx" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
+                value={encargadoCedula} onChange={(e) => setEncargadoCedula(e.target.value)} placeholder="Formato: 0-0000-0000" className="w-full mt-1 rounded border px-3 py-2 bg-neutral-800 text-white" />
 
               {/* Número de Teléfono */}
               <label className="block text-base font-semibold text-white">Número de Teléfono</label>

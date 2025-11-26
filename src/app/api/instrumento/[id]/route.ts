@@ -74,7 +74,7 @@ export async function DELETE(
     if (inventarios.length > 0) {
       // 3. Verificar si alguno está prestado o atrasado
       const tienePrestados = inventarios.some(
-        (inv) => inv.Estado === "Prestado" || inv.Estado === "Atrasado"
+        (inv) => inv.estado === "Prestado" || inv.estado === "Atrasado"
       );
 
       if (tienePrestados) {
