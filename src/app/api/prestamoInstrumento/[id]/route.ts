@@ -60,7 +60,7 @@ export async function PUT(
 
       await prisma.inventario.update({
         where: { idInventario: prestamoActualizado.idInventario },
-        data: { Estado: nuevoEstado },
+        data: { estado: nuevoEstado },
       });
     }
 
@@ -113,7 +113,7 @@ export async function DELETE(
     //Devolver instrumento al inventario
     await prisma.inventario.update({
       where: { idInventario: prestamoEliminado.idInventario },
-      data: { Estado: "Disponible" },
+      data: { estado: "Disponible" },
     });
 
     return NextResponse.json({
