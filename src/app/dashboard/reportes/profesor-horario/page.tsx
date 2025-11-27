@@ -14,9 +14,13 @@ type Profesor = {
 
 type Horario = {
   idHorario: number;
-  idProfesor: number;
   dia: string;
   horario: string;
+};
+
+type ProfesorHorario = {
+  idProfesor: number;
+  idHorario: number;
 };
 
 type ProfesorHorarioData = {
@@ -36,43 +40,56 @@ export default function HorarioProfesorReport() {
     try {
       setLoading(true);
       setError("");
-      
-      // Obtener profesores desde tu API existente
+
+      // 1. Obtener profesores
       const profesoresResponse = await fetch("/api/profesores");
       if (!profesoresResponse.ok) throw new Error("Error al cargar profesores");
       const profesores: Profesor[] = await profesoresResponse.json();
 
-      // Obtener horarios desde tu API existente  
+      // 2. Obtener horarios
       const horariosResponse = await fetch("/api/horario");
       if (!horariosResponse.ok) throw new Error("Error al cargar horarios");
       const horarios: Horario[] = await horariosResponse.json();
 
-      // Combinar los datos para el reporte
+      // 3. Obtener tabla intermedia ProfesorHorario
+      const profesorHorarioResponse = await fetch("/api/profesorHorario");
+      if (!profesorHorarioResponse.ok)
+        throw new Error("Error al cargar asignaciones");
+      const profesorHorario: ProfesorHorario[] =
+        await profesorHorarioResponse.json();
+
+      // 4. Construir el reporte combinando tablas
       const reportData: ProfesorHorarioData[] = [];
 
-      // Para cada profesor, buscar sus horarios
-      profesores.forEach(profesor => {
-        const horariosDelProfesor = horarios.filter(h => h.idProfesor === profesor.idProfesor);
-        
-        if (horariosDelProfesor.length > 0) {
-          // Si el profesor tiene horarios, crear un registro por cada horario
-          horariosDelProfesor.forEach(horario => {
-            reportData.push({
-              idProfesor: profesor.idProfesor,
-              nombreCompleto: profesor.nombreCompleto,
-              dia: horario.dia,
-              horario: horario.horario,
-              cupos: 10 // Cupos fijos en 10 por horario
-            });
+      profesores.forEach((profesor) => {
+        const asignaciones = profesorHorario.filter(
+          (ph) => ph.idProfesor === profesor.idProfesor
+        );
+
+        if (asignaciones.length > 0) {
+          asignaciones.forEach((asig) => {
+            const horario = horarios.find(
+              (h) => h.idHorario === asig.idHorario
+            );
+
+            if (horario) {
+              reportData.push({
+                idProfesor: profesor.idProfesor,
+                nombreCompleto: profesor.nombreCompleto,
+                dia: horario.dia,
+                horario: horario.horario,
+                cupos: 15,
+              });
+            }
           });
         } else {
-          // Si el profesor no tiene horarios, mostrar un registro vacío
+          // Si no tiene horarios asignados
           reportData.push({
             idProfesor: profesor.idProfesor,
             nombreCompleto: profesor.nombreCompleto,
             dia: "No asignado",
             horario: "No asignado",
-            cupos: 0
+            cupos: 0,
           });
         }
       });
@@ -91,7 +108,9 @@ export default function HorarioProfesorReport() {
   }, []);
 
   const handleCuposClick = (item: ProfesorHorarioData) => {
-    alert(`Cupos para:\n${item.nombreCompleto}\n${item.dia} - ${item.horario}\nCupos disponibles: ${item.cupos}/10`);
+    alert(
+      `Cupos para:\n${item.nombreCompleto}\n${item.dia} - ${item.horario}\nCupos disponibles: ${item.cupos}/15`
+    );
   };
 
   const handleRefresh = () => {
@@ -138,7 +157,7 @@ export default function HorarioProfesorReport() {
             <div>
               <h1 className="text-3xl font-bold mb-2">Reporte Horario - Profesor</h1>
               <p className="text-neutral-400">
-                Visualización de profesores y sus horarios asignados - Cupos máximos: 10 por horario
+                Visualización de profesores y sus horarios asignados - Cupos máximos: 15 por horario
               </p>
             </div>
             <button
@@ -150,7 +169,7 @@ export default function HorarioProfesorReport() {
           </div>
         </div>
 
-        {/* Tabla de datos */}
+        {/* Tabla */}
         <div className="bg-neutral-900 rounded-xl shadow-lg p-6">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -167,30 +186,27 @@ export default function HorarioProfesorReport() {
                 {data.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="text-center py-6 text-neutral-400">
-                      No hay datos disponibles en el reporte
+                      No hay registros disponibles
                     </td>
                   </tr>
                 ) : (
                   data.map((item, index) => (
-                    <tr 
+                    <tr
                       key={`${item.idProfesor}-${item.dia}-${index}`}
                       className="border-b border-neutral-700 hover:bg-neutral-800 transition-colors"
                     >
                       <td className="px-4 py-3 text-neutral-400">{item.idProfesor}</td>
-                      <td className="px-4 py-3">
-                        <p className="font-medium">{item.nombreCompleto}</p>
-                      </td>
+                      <td className="px-4 py-3 font-medium">{item.nombreCompleto}</td>
                       <td className="px-4 py-3">{item.dia}</td>
                       <td className="px-4 py-3">{item.horario}</td>
                       <td className="px-4 py-3 text-center">
                         <button
                           onClick={() => handleCuposClick(item)}
-                          className={`font-semibold px-4 py-2 rounded transition-colors min-w-[80px] ${
-                            item.cupos > 0 
-                              ? "bg-sky-600 hover:bg-sky-500 text-white" 
+                          className={`font-semibold px-4 py-2 rounded min-w-[80px] transition-colors ${
+                            item.cupos > 0
+                              ? "bg-sky-600 hover:bg-sky-500 text-white"
                               : "bg-neutral-600 text-neutral-400 cursor-not-allowed"
                           }`}
-                          title="Ver detalles de cupos"
                           disabled={item.cupos === 0}
                         >
                           {item.cupos}/15
@@ -204,21 +220,10 @@ export default function HorarioProfesorReport() {
           </div>
 
           {/* Resumen */}
-          <div className="mt-6 pt-6 border-t border-neutral-700">
-            <div className="flex flex-wrap gap-4 text-sm text-neutral-400">
-              <div>
-                <span className="font-semibold">Total de registros: </span>
-                {data.length}
-              </div>
-              <div>
-                <span className="font-semibold">Profesores únicos: </span>
-                {new Set(data.map(item => item.idProfesor)).size}
-              </div>
-              <div>
-                <span className="font-semibold">Horarios con cupos: </span>
-                {data.filter(item => item.cupos > 0).length}
-              </div>
-            </div>
+          <div className="mt-6 pt-6 border-t border-neutral-700 text-neutral-400 text-sm flex gap-8 flex-wrap">
+            <div><strong>Total de registros:</strong> {data.length}</div>
+            <div><strong>Profesores únicos:</strong> {new Set(data.map(item => item.idProfesor)).size}</div>
+            <div><strong>Horarios con cupos:</strong> {data.filter(item => item.cupos > 0).length}</div>
           </div>
         </div>
       </div>
