@@ -115,6 +115,7 @@ model Estudiante{
   encargadoLegal    EncargadoLegal?
   autorizadoRetiro  AutorizadoRetiro[]
   prestamos         PrestamoInstrumento[]  // relación con préstamos de instrumentos
+  profesores EstudianteProfesor[]
 
   @@map("Estudiante")
 }
@@ -168,6 +169,16 @@ model Inventario {
   @@map("inventario")
 }
 
+model EstudianteProfesor {
+  idEstudiante Int
+  idProfesor   Int
+  
+  estudiante Estudiante @relation(fields: [idEstudiante], references: [idEstudiante], onDelete: Cascade)
+  profesor   Profesor   @relation(fields: [idProfesor], references: [idProfesor], onDelete: Cascade)
+  
+  @@id([idEstudiante, idProfesor])
+  @@map("EstudianteProfesor")
+}
 
 model Profesor {
   idProfesor      Int               @id @default(autoincrement()) @map("idProfesor")
@@ -178,6 +189,7 @@ model Profesor {
   activo          String?           @db.VarChar(10) @default("A")
 
   profesorHorarios ProfesorHorario[]
+  estudiantes EstudianteProfesor[]
 
   @@map("Profesor")
 }
