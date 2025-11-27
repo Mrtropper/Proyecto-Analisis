@@ -28,21 +28,21 @@ export default function DashboardShell({
     role === "ADMIN"
       ? "Administrador"
       : role === "PROVIDER"
-        ? "Proveedor"
-        : role === "USER"
-          ? "Usuario"
-          : "Sin rol";
+      ? "Proveedor"
+      : role === "USER"
+      ? "Usuario"
+      : "Sin rol";
 
   const isAdmin = role === "ADMIN";
   const isUser = role === "USER";
 
   const [isGestionOpen, setIsGestionOpen] = useState(false);
+  const [isReportesOpen, setIsReportesOpen] = useState(false);
 
   return (
-    // ⬇⬇⬇ Fondo con la imagen ocupando toda la pantalla
     <div
       className="min-h-dvh text-neutral-100 flex flex-col bg-cover bg-center"
-      style={{ backgroundImage: "url('/image-bg.png')" }} // o "/image.png"
+      style={{ backgroundImage: "url('/image-bg.png')" }}
     >
       {/* ---------------- HEADER BLANCO ---------------- */}
       <header className="sticky top-0 z-10 border-b border-neutral-300 bg-white text-neutral-900">
@@ -74,7 +74,7 @@ export default function DashboardShell({
                   Modificar Roles
                 </Link>
 
-                {/* Dropdown */}
+                {/* Dropdown Gestión Estudiantes */}
                 <div className="relative">
                   <button
                     onClick={() => setIsGestionOpen(!isGestionOpen)}
@@ -129,8 +129,81 @@ export default function DashboardShell({
                   )}
                 </div>
 
+                {/* Menú Reportes */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsReportesOpen(!isReportesOpen)}
+                    className="hover:text-black flex items-center gap-1"
+                  >
+                    Reportes
+                    <svg
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        isReportesOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
+                  </button>
+
+                  {isReportesOpen && (
+                    <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-neutral-800 ring-1 ring-black ring-opacity-5 z-20">
+                      <div
+                        className="py-1"
+                        role="menu"
+                        aria-orientation="vertical"
+                        aria-labelledby="options-menu"
+                      >
+                        <Link
+                          href="/dashboard/reportes/profesor-horario"
+                          className="block px-4 py-2 text-sm text-neutral-100 hover:bg-neutral-700"
+                          role="menuitem"
+                          onClick={() => setIsReportesOpen(false)}
+                        >
+                          ProfesorHorario
+                        </Link>
+                        <Link
+                          href="/dashboard/reportes/estudiante-profesor"
+                          className="block px-4 py-2 text-sm text-neutral-100 hover:bg-neutral-700"
+                          role="menuitem"
+                          onClick={() => setIsReportesOpen(false)}
+                        >
+                          EstudianteProfesor
+                        </Link>
+                        <Link
+                          href="/dashboard/reportes/estudiante-instrumento"
+                          className="block px-4 py-2 text-sm text-neutral-100 hover:bg-neutral-700"
+                          role="menuitem"
+                          onClick={() => setIsReportesOpen(false)}
+                        >
+                          EstudianteInstrumento
+                        </Link>
+                        <Link
+                          href="/dashboard/reportes/profesorCupos"
+                          className="block px-4 py-2 text-sm text-neutral-100 hover:bg-neutral-700"
+                          role="menuitem"
+                          onClick={() => setIsReportesOpen(false)}
+                        >
+                          ProfesorCupos
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <Link href="/dashboard/profesor" className="hover:text-black">
                   Profesores
+                </Link>
+                <Link href="/dashboard/horario" className="hover:text-black">
+                  Horarios
                 </Link>
 
                 <Link href="/dashboard/instruments" className="hover:text-black">

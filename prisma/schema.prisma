@@ -1,3 +1,17 @@
+model PrestamoInstrumento {
+  idPrestamo     Int      @id @default(autoincrement())
+  idEstudiante   Int
+  idInstrumento  Int
+  idInventario   String   @db.VarChar(100)
+  fechaEntrega   DateTime?
+  Estatus        String?  @db.VarChar(20)
+
+  estudiante     Estudiante?   @relation(fields: [idEstudiante], references: [idEstudiante])
+  instrumento    Instrumento?  @relation(fields: [idInstrumento], references: [idInstrumento])
+  inventario     Inventario?   @relation(fields: [idInventario], references: [idInventario])
+
+  @@map("PrestamoInstrumento")
+}
 generator client {
   provider = "prisma-client-js"
 }
@@ -77,16 +91,6 @@ model PermisosModulos {
   @@map("PermisosModulos")
 }
 
-model Profesor {
-  idProfesor     Int     @id @default(autoincrement())
-  nombreCompleto String  @db.VarChar(80)
-  correo         String? @db.VarChar(120)
-  telefono       String? @db.VarChar(30)
-  jornada        String? @db.VarChar(90)
-  activo         String? @default("A") @db.VarChar(10)
-
-  @@map("Profesor")
-}
 
 model Estudiante{
   idEstudiante    Int       @id @default(autoincrement()) @map("IdEstudiante")
@@ -111,6 +115,7 @@ model Estudiante{
   encargadoLegal    EncargadoLegal?
   autorizadoRetiro  AutorizadoRetiro[]
   prestamos         PrestamoInstrumento[]  // relación con préstamos de instrumentos
+  profesores EstudianteProfesor[]
 
   @@map("Estudiante")
 }
@@ -164,18 +169,49 @@ model Inventario {
   @@map("inventario")
 }
 
-model PrestamoInstrumento {
-  idPrestamo     Int       @id @default(autoincrement()) @map("idPrestamo")
-  idEstudiante   Int       @map("idEstudiante")
-  idInstrumento  Int       @map("idInstrumento")
-  idInventario   String    @db.VarChar(60)
-  fechaEntrega   DateTime? @map("fechaEntrega")
-  Estatus        String?   @db.VarChar(15)
+model EstudianteProfesor {
+  idEstudiante Int
+  idProfesor   Int
+  
+  estudiante Estudiante @relation(fields: [idEstudiante], references: [idEstudiante], onDelete: Cascade)
+  profesor   Profesor   @relation(fields: [idProfesor], references: [idProfesor], onDelete: Cascade)
+  
+  @@id([idEstudiante, idProfesor])
+  @@map("EstudianteProfesor")
+}
 
-  estudiante   Estudiante  @relation(fields: [idEstudiante], references: [idEstudiante])
-  instrumento  Instrumento @relation(fields: [idInstrumento], references: [idInstrumento])
-  inventario   Inventario  @relation(fields: [idInventario], references: [idInventario])
+model Profesor {
+  idProfesor      Int               @id @default(autoincrement()) @map("idProfesor")
+  nombreCompleto  String            @db.VarChar(80)
+  correo          String?           @db.VarChar(120)
+  telefono        String?           @db.VarChar(30)
+  jornada         String?           @db.VarChar(90)
+  activo          String?           @db.VarChar(10) @default("A")
 
-  @@map("PrestamoInstrumento")
+  profesorHorarios ProfesorHorario[]
+  estudiantes EstudianteProfesor[]
+
+  @@map("Profesor")
+}
+
+model Horario {
+  idHorario  Int                @id @default(autoincrement()) @map("idHorario")
+  dia        String?            @db.VarChar(100)
+  horario    String?            @db.VarChar(100)
+
+  profesorHorarios ProfesorHorario[]
+
+  @@map("Horario")
+}
+
+model ProfesorHorario {
+  idProfesor Int
+  idHorario  Int
+
+  profesor   Profesor @relation(fields: [idProfesor], references: [idProfesor])
+  horario    Horario  @relation(fields: [idHorario], references: [idHorario])
+
+  @@id([idProfesor, idHorario])
+  @@map("ProfesorHorario")
 }
 

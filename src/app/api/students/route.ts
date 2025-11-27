@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+
 //POST: Crear un nuevo estudiante, encargado legal y autorizado a recoger
 export async function POST(request: Request) {
     try {
